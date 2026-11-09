@@ -1,0 +1,20 @@
+{
+  "strategy": "F04_ROEQ_reconstructed",
+  "days": 752,
+  "total_return": 0.5277966132174805,
+  "annual_return": 0.15260775778018298,
+  "annual_volatility": 0.14775849929002338,
+  "sharpe": 1.0351049671223687,
+  "max_drawdown": -0.18830841837791323,
+  "mean_daily_turnover": 0.010063541779217618,
+  "fitness_local": 1.1437146704303385,
+  "spy_annual_return": 0.22861729714646706,
+  "annual_return_minus_spy": -0.07600953936628407,
+  "relative_nav_annual_return": -0.06186591995963353,
+  "relative_nav_max_drawdown": -0.18721867465029085,
+  "exception_rows": 1,
+  "cost_bps": 10,
+  "smooth": 1,
+  "rebalance_every": 5,
+  "timing": "T signal -> T+1 close trade -> T+2 first held return"
+}

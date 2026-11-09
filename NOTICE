@@ -1,0 +1,20 @@
+Team 34 DSA5205 Project 2
+
+This repository contains a classroom research implementation and aggregate
+experimental outputs. The code base is adapted from:
+https://github.com/Panyuxiang0830/Quant_U.S._stocks
+
+Data-ingestion patterns reference:
+https://github.com/simonlin1212/global-stock-data
+
+WorldQuant formula numbers reference Zura Kakushadze, 101 Formulaic Alphas
+(2016), arXiv:1601.00991. The fundamental-factor reports are cited in the
+English report and the source-linked factor catalog. The report implements
+only the stated candidate subset and U.S. adaptations, not every formula or
+each report's complete original trading strategy.
+
+Existing source notices and provenance documents are retained. No additional
+blanket license is asserted for third-party code, publications or data.
+Commercial source data, security-level panels, trained models and credentials
+are intentionally not redistributed. Team members must obtain required data
+through their authorized institutional access.

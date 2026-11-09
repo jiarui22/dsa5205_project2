@@ -1,0 +1,40 @@
+{
+  "status": "post-main-run descriptive extensions; no new model/factor selection and no fresh holdout claim",
+  "seed": 5205,
+  "bootstrap_reps": 2000,
+  "bootstrap_block": 20,
+  "bootstrap": "paired circular moving blocks of trading dates; percentile 95% intervals, not multiple-test adjusted",
+  "horizons": [
+    1,
+    5,
+    10,
+    20
+  ],
+  "factor_phases": [
+    [
+      "2015-2018",
+      "20150101",
+      "20181231"
+    ],
+    [
+      "2019-2021",
+      "20190101",
+      "20211231"
+    ],
+    [
+      "2022",
+      "20220101",
+      "20221231"
+    ]
+  ],
+  "single_factor_portfolios": "all ten retained factors, frozen directions, main execution and costs; no winners fed back into main models",
+  "baselines": [
+    "equal_weight_scores_A",
+    "equal_weight_scores_B",
+    "equal_weight_scores_C",
+    "equal_weight_eligible_pool"
+  ],
+  "baseline_missing": "eligible current percentile centered at .5; missing value=0; same at-least-one-WQ-observed eligibility as main models",
+  "monthly_style_snapshots": "2015-2022 last session each month; signal-close Top100 target exposures; development diagnostics, not held P&L",
+  "smoothing_OOS": "Ridge A/B, all existing windows 1/3/5/10 and rebalance 1/5; no re-selection"
+}

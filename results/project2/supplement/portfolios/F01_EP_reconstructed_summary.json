@@ -1,0 +1,20 @@
+{
+  "strategy": "F01_EP_reconstructed",
+  "days": 752,
+  "total_return": 0.5019935439551002,
+  "annual_return": 0.146047443115211,
+  "annual_volatility": 0.23954292037960023,
+  "sharpe": 0.6885285288407259,
+  "max_drawdown": -0.2595432917726259,
+  "mean_daily_turnover": 0.019590995286376516,
+  "fitness_local": 0.7442415497376126,
+  "spy_annual_return": 0.22861729714646706,
+  "annual_return_minus_spy": -0.08256985403125605,
+  "relative_nav_annual_return": -0.0672055116129553,
+  "relative_nav_max_drawdown": -0.2858181720445374,
+  "exception_rows": 1223,
+  "cost_bps": 10,
+  "smooth": 1,
+  "rebalance_every": 5,
+  "timing": "T signal -> T+1 close trade -> T+2 first held return"
+}

@@ -1,0 +1,20 @@
+{
+  "strategy": "F05_FCF_yield",
+  "days": 752,
+  "total_return": 0.6598685958817916,
+  "annual_return": 0.18508118855364009,
+  "annual_volatility": 0.21257421730387394,
+  "sharpe": 0.904945006327696,
+  "max_drawdown": -0.24898198565099028,
+  "mean_daily_turnover": 0.016389887813706587,
+  "fitness_local": 1.1011546605352955,
+  "spy_annual_return": 0.22861729714646706,
+  "annual_return_minus_spy": -0.04353610859282697,
+  "relative_nav_annual_return": -0.035435044495907286,
+  "relative_nav_max_drawdown": -0.2328013687861531,
+  "exception_rows": 15,
+  "cost_bps": 10,
+  "smooth": 1,
+  "rebalance_every": 5,
+  "timing": "T signal -> T+1 close trade -> T+2 first held return"
+}

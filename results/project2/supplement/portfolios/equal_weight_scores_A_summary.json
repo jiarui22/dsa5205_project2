@@ -1,0 +1,20 @@
+{
+  "strategy": "equal_weight_scores_A",
+  "days": 752,
+  "total_return": 0.18299628418517977,
+  "annual_return": 0.05793064297214445,
+  "annual_volatility": 0.20712175848557088,
+  "sharpe": 0.3751933575911566,
+  "max_drawdown": -0.2757974770899345,
+  "mean_daily_turnover": 0.1711790830221427,
+  "fitness_local": 0.21826493358505,
+  "spy_annual_return": 0.22861729714646706,
+  "annual_return_minus_spy": -0.1706866541743226,
+  "relative_nav_annual_return": -0.13892581080434863,
+  "relative_nav_max_drawdown": -0.3747085949907778,
+  "exception_rows": 4,
+  "cost_bps": 10,
+  "smooth": 1,
+  "rebalance_every": 5,
+  "timing": "T signal -> T+1 close trade -> T+2 first held return"
+}

@@ -1,0 +1,79 @@
+"""Self-contained offline HTML reports. All numbers originate in emitted CSVs."""
+from __future__ import annotations
+from html import escape
+from pathlib import Path
+import json
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from usq.utils import json_dump
+
+
+def _dates(index):
+    return pd.to_datetime(index.astype(str), format="%Y%m%d")
+
+
+def _lines(frame, title, percent=False):
+    fig = go.Figure()
+    for col in frame:
+        fig.add_trace(go.Scatter(x=_dates(frame.index), y=frame[col], name=str(col), connectgaps=False))
+    fig.update_layout(title=title, template="plotly_white", height=430,
+                      legend=dict(orientation="h"), margin=dict(l=60, r=25, t=65, b=55))
+    if percent: fig.update_yaxes(tickformat=".1%")
+    return fig
+
+
+def write_html(path, title, figures, note="", tables=()):
+    chunks = []
+    for i, f in enumerate(figures):
+        chunks.append(f.to_html(full_html=False, include_plotlyjs=True if i == 0 else False))
+    chunks += [t.to_html(escape=True, float_format=lambda x: f"{x:.6f}") for t in tables]
+    html = f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8">
+<title>{escape(title)}</title><style>body{{font:15px/1.7 system-ui,sans-serif;color:#172b40;background:#f5f7fa;margin:0}}
+main{{max-width:1240px;margin:auto;padding:30px}}h1{{font-size:27px}}p{{max-width:1050px}}
+.card{{background:white;border:1px solid #dbe1e8;margin:20px 0;padding:15px;overflow:auto}}
+table{{border-collapse:collapse;font-size:13px}}th,td{{padding:7px 12px;border:1px solid #dbe1e8}}</style>
+<main><h1>{escape(title)}</h1><p>{escape(note)}</p>'''
+    html += "".join(f'<div class="card">{c}</div>' for c in chunks) + "</main></html>"
+    Path(path).write_text(html, encoding="utf-8")
+
+
+def save_backtest(result, group_returns, out_dir, title="Strategy backtest"):
+    out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
+    result.daily.to_csv(out / "daily.csv", index_label="date")
+    result.weights.to_pickle(out / "weights.pkl", protocol=4)
+    if result.post_close_weights is not None:
+        result.post_close_weights.to_pickle(out / 'post_close_weights.pkl', protocol=4)
+    json_dump(result.summary, out / "summary.json")
+    group_returns.to_csv(out / "group_returns.csv", index_label="date")
+    navcols = [k for k in ("gross_nav", "net_nav", "benchmark_nav", "relative_nav") if k in result.daily]
+    figures = [_lines(result.daily[navcols], "Cumulative NAV  gross net benchmark"),
+               _lines(result.daily[["drawdown"]], "Net portfolio drawdown  includes initial NAV", True)]
+    means = group_returns.mean()
+    fig = go.Figure(go.Bar(x=means.index, y=means, text=group_returns.count(), name="mean daily net return"))
+    fig.update_layout(template="plotly_white", title="Score groups  low to high  daily net return and observation count", height=420)
+    fig.update_yaxes(tickformat=".2%")
+    figures.append(fig)
+    gnav = (1 + group_returns.fillna(0)).cumprod().where(group_returns.notna())
+    figures.append(_lines(gnav, "Score group NAV  gaps mean empty bins  cash across gaps"))
+    figures.append(_lines(result.daily[["turnover", "cost", "borrow_cost"]], "Turnover and modeled costs", True))
+    yearly = result.daily.net_return.groupby(result.daily.index.str[:4]).apply(lambda x: (1 + x).prod() - 1).to_frame("net_return")
+    write_html(out / "report.html", title, figures,
+        note="Research simulation. T after-close signal, T+1 close execution; first held return at T+2. Fees on execution close, including entry and configured liquidation. "
+             "Costs apply to dollars traded. Missing held marks abort. Group ties stay together; empty bins have no observation. "
+             "Adjusted price returns include dividends only when the supplied adjustment factor does. No cash/share/impact ledger.",
+        tables=[pd.DataFrame(result.summary["net"], index=["net"]).T, yearly])
+    return out / "report.html"
+
+
+def save_barra(result, backtest, out_dir, metadata=None):
+    """Reference report inputs plus the project's complete reconciled series."""
+    from usq.barra.reference_report import build_report
+    out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
+    for key, frame in result.items(): frame.to_csv(out / f"{key}.csv", index_label="date")
+    aliases = {"portfolio_exposures":"daily_portfolio_exposure", "benchmark_exposures":"daily_benchmark_exposure",
+               "active_exposures":"daily_active_exposure", "factor_returns":"daily_factor_returns"}
+    for key, name in aliases.items(): result[key].to_csv(out/f"{name}.csv", index_label="date")
+    json_dump(metadata or {}, out/"model_metadata.json")
+    return build_report(out,portfolio="策略",benchmark=(metadata or {}).get('benchmark_name', '基准') if (metadata or {}).get("has_benchmark",True) else None)

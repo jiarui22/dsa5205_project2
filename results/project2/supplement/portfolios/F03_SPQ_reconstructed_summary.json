@@ -1,0 +1,20 @@
+{
+  "strategy": "F03_SPQ_reconstructed",
+  "days": 752,
+  "total_return": 0.35483206675666534,
+  "annual_return": 0.10712246141807968,
+  "annual_volatility": 0.340387036043671,
+  "sharpe": 0.4689269652930992,
+  "max_drawdown": -0.5049870208439022,
+  "mean_daily_turnover": 0.016344913038033853,
+  "fitness_local": 0.43410068616926256,
+  "spy_annual_return": 0.22861729714646706,
+  "annual_return_minus_spy": -0.12149483572838737,
+  "relative_nav_annual_return": -0.09888745340845273,
+  "relative_nav_max_drawdown": -0.5102141693103277,
+  "exception_rows": 731,
+  "cost_bps": 10,
+  "smooth": 1,
+  "rebalance_every": 5,
+  "timing": "T signal -> T+1 close trade -> T+2 first held return"
+}

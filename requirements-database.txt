@@ -1,0 +1,8 @@
+# Same input snapshots + this environment + identical configuration are required.
+# Use Python 3.13 for this tested prototype. Research/model dependencies are separate.
+numpy==2.3.2
+pandas==2.3.2
+pyarrow==26.0.0
+exchange_calendars==4.13.2
+requests==2.34.2
+pytest==9.2.0
