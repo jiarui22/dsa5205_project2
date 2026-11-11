@@ -60,7 +60,7 @@
   },
   "source_snapshot_unchanged": true,
   "source_files_hash_verified": 75,
-  "notebook_sha256": "7b635dfeedd2e91198b267e117b7662f4f48ffdc7ce24e0fc315a4c6febd6f0b",
+  "notebook_sha256": "2b5b14cadc2877a0a80d6ced7d1579d21cefbc732bcf61f8cc31c67d7e080623",
   "report_sha256": "fe4a2948121a8f2ca1749a4687ae028a97ed8be5ca6b40c7fb3329f5f91de0a4",
   "report_pages": 21,
   "report_visual_qa_passed": true,
@@ -86,5 +86,27 @@
     "Unused Ridge CV candidates can have small numerical IC differences; frozen selections and all portfolio summary metrics match.",
     "The current main design uses five-year forecast windows and fundamental/combined/engineered comparisons, rather than the earlier expanding-from-2015 and price-only versus mixed request.",
     "This verification record was generated locally before publication."
-  ]
+  ],
+  "research_run_notebook_sha256": "7b635dfeedd2e91198b267e117b7662f4f48ffdc7ce24e0fc315a4c6febd6f0b",
+  "presentation_refresh": {
+    "passed": true,
+    "refreshed_utc": "2026-11-11T07:17:37.753165+00:00",
+    "research_run_notebook_sha256": "7b635dfeedd2e91198b267e117b7662f4f48ffdc7ce24e0fc315a4c6febd6f0b",
+    "figures": 9,
+    "tables": 12,
+    "research_refitted": false,
+    "portfolio_replayed": false,
+    "full_run_repeated_after_display_edits": false,
+    "source_run": "experiment_20261111_110038_076238",
+    "auxiliary_input_sha256": {
+      "results/period_oos_r2.csv": "86cdf6e0816bf21676e4f60d96a40b8d66716340b0fae6f6e8eaf64e23c5081b",
+      "results/period_metrics.csv": "7b4a19812cf6a048b98fa94bec0eafa4ea4b72838069e1ac21fd1b9c726304f5",
+      "reports/final/notebook_evidence/universe_counts.csv": "9aaf1773185db0000537c2d1bc7110e02e4220eaf6eebb2d526e4ddd25c5da86"
+    },
+    "note": "Execution counts and research run record refer to the prior fresh-kernel run; display operations and prose were refreshed separately from its recorded artifacts.",
+    "notebook_sha256": "2b5b14cadc2877a0a80d6ced7d1579d21cefbc732bcf61f8cc31c67d7e080623",
+    "research_call_ASTs_unchanged": true,
+    "all_figures_visually_reviewed": true,
+    "numeric_result_files_unchanged": true
+  }
 }

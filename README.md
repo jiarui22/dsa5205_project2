@@ -52,6 +52,8 @@ Allow time and disk space for data preparation, 396 model fits, 38 portfolio led
 
 **Verified release (11 November 2026).** The saved notebook now comes from one successful fresh-kernel, top-to-bottom execution: 13 code cells numbered 1–13, 396 fresh learner fits without checkpoint reuse, and 38 reconciled portfolio ledgers. Execution took approximately 87 minutes on the validation machine. All 64 automated tests passed. Portfolio summary metrics, the WQ screen and frozen choices reproduce upstream commit `a4a31d6`. The updated 21-page English report is [Group_34_Report.pdf](reports/final/Group_34_Report.pdf); its figures and tables use this verified run. See [VALIDATION.json](VALIDATION.json) for verification records. The new video and confirmation of individual team contributions remain pending. The shared source archive excludes the database and fitted models.
 
+**Notebook presentation review.** A separate display-only pass corrected the obsolete small-grid/120-tree prose, numbered and reviewed all nine figures, clarified reference-portfolio versus selected-portfolio diagnostics, standardized plot labels/colors/units, and formatted twelve result tables. Long recorded execution logs are expandable without dropping their messages. This pass regenerated displays from the verified run; it did not refit models, replay portfolios or repeat the complete 87-minute workflow. The original execution counts refer to that research run, with the later display refresh recorded separately in notebook metadata and `VALIDATION.json`. Plot helpers also apply when the revised notebook is executed again.
+
 ## Research design
 
 | Stage | Dates and rule |

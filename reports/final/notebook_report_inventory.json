@@ -1,6 +1,6 @@
 {
   "source_commit": "a4a31d6f822f6e2ab1099993266454799d9e8c31",
-  "notebook_sha256": "7b635dfeedd2e91198b267e117b7662f4f48ffdc7ce24e0fc315a4c6febd6f0b",
+  "notebook_sha256": "2b5b14cadc2877a0a80d6ced7d1579d21cefbc732bcf61f8cc31c67d7e080623",
   "verified_code_cells": 13,
   "fresh_model_fits": 396,
   "portfolio_ledgers": 38,
@@ -34,5 +34,7 @@
     "nb_weighting.tex",
     "nb_windows.tex",
     "nb_wq.tex"
-  ]
+  ],
+  "research_run_notebook_sha256": "7b635dfeedd2e91198b267e117b7662f4f48ffdc7ce24e0fc315a4c6febd6f0b",
+  "display_only_refresh": true
 }
