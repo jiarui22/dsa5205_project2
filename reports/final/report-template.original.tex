@@ -1,0 +1,159 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=0.82in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{setspace}
+\definecolor{navy}{HTML}{17365D}
+\hypersetup{colorlinks=true,linkcolor=navy,citecolor=navy,urlcolor=navy}
+\titleformat{\section}{\Large\bfseries\color{navy}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.5em}{}
+\setlist[itemize]{leftmargin=1.35em,itemsep=2pt,topsep=3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\CourseCode\ -- \ReportType}
+\rhead{\StudentID}
+\cfoot{\thepage}
+\newcommand{\code}[1]{\texttt{#1}}
+
+
+% ================= EDIT REPORT DETAILS HERE =================
+% English text: compile with pdfLaTeX (or XeLaTeX).
+% Chinese text: compile with XeLaTeX and uncomment the next line.
+% \usepackage[UTF8,fontset=fandol]{ctex}
+\newcommand{\University}{National University of Singapore}
+\newcommand{\CourseCode}{COURSE0000}
+\newcommand{\CourseName}{Course Name}
+\newcommand{\ReportType}{Project Report}
+\newcommand{\ReportTitle}{Your Report Title}
+\newcommand{\StudentName}{Your Name}
+\newcommand{\StudentID}{Your Student ID}
+\newcommand{\StudentEmail}{your.email@example.com}
+\newcommand{\ReportDate}{Month Year}
+% ============================================================
+
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{2.0cm}
+{\Large \University\par}
+\vspace{0.4cm}
+{\large \CourseCode\ \CourseName\par}
+\vspace{2.0cm}
+{\Huge\bfseries \ReportType\par}
+\vspace{0.35cm}
+{\LARGE \ReportTitle\par}
+\vfill
+\begin{tabular}{rl}
+\textbf{Name:} & \StudentName\\
+\textbf{Student ID:} & \StudentID\\
+\textbf{Email:} & \StudentEmail\\
+\end{tabular}
+\vfill
+{\large \ReportDate\par}
+\end{titlepage}
+
+\begin{abstract}
+[Summarize the problem, approach, main findings, and conclusion.
+Replace this paragraph with your own abstract.]
+\end{abstract}
+
+% Optional contents page: uncomment both lines for longer reports.
+% \tableofcontents
+% \newpage
+
+\section{Introduction}
+[Introduce the topic, explain the motivation, and state the objectives
+or questions addressed by this report.]
+
+\section{Background and Notation}
+[Summarize relevant concepts and prior work. Define the notation used
+throughout the report. Cite sources where appropriate, e.g.,
+\cite{example-reference}.]
+
+\section{Methodology}
+\subsection{Data or Problem Setup}
+[Describe the data, assumptions, experimental setup, or problem context.]
+
+\subsection{Approach}
+[Explain your method and justify the key choices.]
+An example numbered equation is
+\begin{equation}
+\widehat{y}_i = \bm{x}_i^{\mathsf T}\bm{\beta}.
+\label{eq:example}
+\end{equation}
+Refer to it using Equation~\ref{eq:example}.
+
+\section{Results and Discussion}
+[Present the evidence, explain the findings, and discuss limitations.
+The values below are examples only; replace or remove them.]
+
+\begin{table}[htbp]
+\centering
+\caption{Example comparison table. Replace all example entries.}
+\label{tab:example}
+\small
+\begin{tabularx}{\textwidth}{l r X}
+\toprule
+Method & Score & Notes \\
+\midrule
+Method A & 0.80 & Brief explanation of the first result. \\
+Method B & 0.85 & Brief explanation of the second result. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:example} demonstrates a table with an automatically
+wrapping text column.
+
+% Replace the placeholder with an image when ready. Paths are relative
+% to this .tex file; create a figures/ folder beside it.
+\begin{figure}[htbp]
+\centering
+% \includegraphics[width=0.88\textwidth]{figures/your-figure.png}
+\fbox{\parbox[c][4cm][c]{0.84\textwidth}{\centering
+Figure placeholder\\[0.5em]
+Replace this box with your own figure.}}
+\caption{Example figure caption. Describe the figure and its key message.}
+\label{fig:example}
+\end{figure}
+
+Refer to figures using Figure~\ref{fig:example}. Use \code{filename.py}
+for short code or file references; escape underscores as \code{my\_file.py}.
+
+\section{Conclusion}
+[Answer the report's main question, summarize the supported findings,
+and identify any useful next steps.]
+
+% Include only if required by your course. Describe your actual AI use
+% accurately and follow the course's declaration requirements.
+% \section*{AI Use Declaration}
+% [State which tools you used, for which tasks, and how you checked their output.]
+
+\begin{thebibliography}{9}
+\bibitem{example-reference}
+Author Name.
+\newblock Title of the referenced work.
+\newblock \emph{Journal or Publisher}, Year.
+\end{thebibliography}
+
+% Optional appendix: uncomment and replace the placeholder.
+% \appendix
+% \section{Additional Details}
+% [Provide supporting derivations, additional results, or implementation details.]
+
+\end{document}

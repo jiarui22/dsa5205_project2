@@ -1,0 +1,12 @@
+{
+  "selected_case": "fundamental_cap",
+  "selected_by_model": {
+    "fundamental": "fundamental_cap",
+    "ridge": "ml_ridge",
+    "lasso": null,
+    "xgboost": "ml_xgboost_equal"
+  },
+  "selection_period": "2023",
+  "criterion": "2023 net Sharpe across four score sources and three weightings; mean cash <=5%; tie lower turnover then case",
+  "evaluation_used_for_selection": false
+}

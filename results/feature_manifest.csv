@@ -1,0 +1,25 @@
+name,block,transformation
+WQ004,combined,eligible daily percentile minus .5; neutral zero + missing flag
+WQ052,combined,eligible daily percentile minus .5; neutral zero + missing flag
+WQ019,combined,eligible daily percentile minus .5; neutral zero + missing flag
+WQ035,combined,eligible daily percentile minus .5; neutral zero + missing flag
+WQ038,combined,eligible daily percentile minus .5; neutral zero + missing flag
+WQ026,combined,eligible daily percentile minus .5; neutral zero + missing flag
+F01_EP_reconstructed,fundamental,eligible daily percentile minus .5; neutral zero + missing flag
+change20_F01_EP_reconstructed,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+F02_BP_reconstructed,fundamental,eligible daily percentile minus .5; neutral zero + missing flag
+change20_F02_BP_reconstructed,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+F03_SPQ_reconstructed,fundamental,eligible daily percentile minus .5; neutral zero + missing flag
+change20_F03_SPQ_reconstructed,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+F04_ROEQ_reconstructed,fundamental,eligible daily percentile minus .5; neutral zero + missing flag
+change20_F04_ROEQ_reconstructed,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+F05_FCF_yield,fundamental,eligible daily percentile minus .5; neutral zero + missing flag
+change20_F05_FCF_yield,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+F06_earnings_surprise,fundamental,eligible daily percentile minus .5; neutral zero + missing flag
+change20_F06_earnings_surprise,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+momentum5,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+momentum20,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+momentum60,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+volatility20,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+volume_surprise20,engineered,eligible daily percentile minus .5; neutral zero + missing flag
+size,engineered,eligible daily percentile minus .5; neutral zero + missing flag

@@ -7,21 +7,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from usq.backtest.metrics import performance
-from usq.data.labels import close_forward_returns
+from usq.data.labels import NEXT_CLOSE_LABEL_POLICY, close_forward_returns
 from usq.barra.exposures import build_exposures
 from .factors import rank
-from .ledger import Market
+from .ledger import Market, stable_tie_ranks, top_positions
 from .risk import ResearchStore
 from .screen import information_series, write_json
+from .protocol import bind_inputs
 
 
 POLICY = {
-    "status": "post-main-run descriptive extensions; no new model/factor selection and no fresh holdout claim",
+    'label_policy': NEXT_CLOSE_LABEL_POLICY,
+    'tie_break': 'Top100 boundary ties: SHA256(seed=5205,SID), same rule in ledger and monthly target snapshots',
+    "status": "predeclared v2 descriptive diagnostics on previously inspected dates; no winner reselection and no fresh holdout claim",
     "seed": 5205, "bootstrap_reps": 2000, "bootstrap_block": 20,
     "bootstrap": "paired circular moving blocks of trading dates; percentile 95% intervals, not multiple-test adjusted",
     "horizons": [1, 5, 10, 20],
     "factor_phases": [["2015-2018", "20150101", "20181231"], ["2019-2021", "20190101", "20211231"], ["2022", "20220101", "20221231"]],
-    "single_factor_portfolios": "all ten retained factors, frozen directions, main execution and costs; no winners fed back into main models",
+    "single_factor_portfolios": "all actually selected factors, frozen directions, main execution and costs; no winners fed back into main models",
     "baselines": ["equal_weight_scores_A", "equal_weight_scores_B", "equal_weight_scores_C", "equal_weight_eligible_pool"],
     "baseline_missing": "eligible current percentile centered at .5; missing value=0; same at-least-one-WQ-observed eligibility as main models",
     "monthly_style_snapshots": "2015-2022 last session each month; signal-close Top100 target exposures; development diagnostics, not held P&L",
@@ -172,7 +175,12 @@ def monthly_styles(root, out, selection):
     for name in names:
         f = pd.read_pickle(out/"factors"/f"{name}.pkl").loc[dates]*selection["directions"][name]
         f = f.where(u.reindex(dates).eq(1))
-        target = f.rank(axis=1, ascending=False, method="first").le(100) & f.notna()
+        target = pd.DataFrame(False, index=f.index, columns=f.columns)
+        tie_ranks = stable_tie_ranks(f.columns)
+        for i in range(len(f)):
+            values = f.iloc[i].to_numpy()
+            chosen = top_positions(values, np.isfinite(values), tie_ranks)
+            target.iloc[i, chosen] = True
         w = target.div(target.sum(axis=1).replace(0, np.nan), axis=0).fillna(0)
         for style, panel in styles.items():
             for day in dates:
@@ -200,6 +208,7 @@ def monthly_styles(root, out, selection):
 def run(database, output, stage="all"):
     root, out = Path(database), Path(output)
     (out/"supplement").mkdir(exist_ok=True)
+    bind_inputs(root, out, pd.read_pickle(root/'panels/universe.pkl'))
     original = out/"supplement/protocol.json"
     if original.exists() and json.loads(original.read_text()) != POLICY:
         raise ValueError("Supplement protocol differs")

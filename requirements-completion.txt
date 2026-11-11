@@ -1,6 +1,0 @@
-# Verified isolated environment for the trusted Team17 pickle export.
-# Python 3.13.5; tests use the standard-library unittest runner.
-numpy==2.5.4
-pandas==3.1.1
-pyarrow==26.0.1
-exchange_calendars==4.13.2

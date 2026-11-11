@@ -1,0 +1,235 @@
+{
+  "passed": true,
+  "portfolios": 38,
+  "maximum_independent_holdings_error": 1.2854668603873298e-08,
+  "checks": [
+    {
+      "case": "pool_equal",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "fundamental_equal",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "pool_sqrt_cap",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "fundamental_sqrt_cap",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "pool_cap",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "fundamental_cap",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_ridge_equal",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_ridge",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_ridge_cap",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_lasso_equal",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_lasso",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_lasso_cap",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_xgboost_equal",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_xgboost",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_xgboost_cap",
+      "phase": "validation",
+      "sessions": 250,
+      "accounting_passed": true
+    },
+    {
+      "case": "pool_equal",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "fundamental_equal",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "pool_sqrt_cap",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "fundamental_sqrt_cap",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "pool_cap",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "fundamental_cap",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_ridge_equal",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_ridge",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_ridge_cap",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_lasso_equal",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_lasso",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_lasso_cap",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_xgboost_equal",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_xgboost",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "ml_xgboost_cap",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "cost_20",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "cost_30",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "without_F01",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "without_F02",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "without_F03",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "without_F04",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "without_F05",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    },
+    {
+      "case": "without_F06",
+      "phase": "evaluation",
+      "sessions": 502,
+      "accounting_passed": true
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "source_files_verified": 75,
+  "calendar_sessions": 3018,
+  "SID_union": 4366,
+  "quarantined_bars": 2,
+  "quarantined_eligible_bars": 1,
+  "last_11_targets_censored": true,
+  "financial_audit": {
+    "events": 2696899,
+    "fields": 15,
+    "events_before_period_end": 0,
+    "missing_available_dates": 0
+  },
+  "binding": {
+    "source_checksums": "cb1fa57bd8fd1a461266b9a119827ea7dcf21921cbf351244a6da1a0281ba082",
+    "implementation": "0eb885410e1db5fba83a8cb970baffe38248dde2199b397740d25c52766b27e3"
+  }
+}

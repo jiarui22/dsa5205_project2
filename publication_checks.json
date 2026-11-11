@@ -1,9 +1,0 @@
-{
-  "unit_tests_passed": 114,
-  "aggregate_only_report_pages": 25,
-  "aggregate_only_report_text_matches_reviewed_pdf": true,
-  "raw_database_required_for_report_rebuild": false,
-  "published_pdf_sha256": "1611cfeef7a6fa318bac5403ce4889b4fa075861503fc97437ec4a5e768f4cbd",
-  "main_experiment_refit": false,
-  "full_research_rerun_on_second_machine": "pending_team_action"
-}

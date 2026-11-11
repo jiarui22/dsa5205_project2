@@ -57,3 +57,68 @@ def test_terminal_missing_close_uses_event_then_cash():
     assert daily.iloc[2].gross_return == -.25
     assert weights.iloc[3].sum() == 0
     assert events.iloc[0].policy == "terminal_source_return_cash_settlement"
+
+
+def test_terminal_source_return_overrides_finite_stale_mark(tmp_path):
+    # Exercise the constructor: ffill makes the missing terminal close produce
+    # a finite zero return while the vendor records an actual terminal loss.
+    p = tmp_path/'panels'; p.mkdir()
+    dates = pd.Index(['20230103', '20230104', '20230105', '20230106'])
+    close = pd.DataFrame(100., index=dates, columns=['a', 'b'])
+    close.loc['20230105', 'a'] = np.nan
+    fields = {'close_adj': close,
+              'universe': pd.DataFrame(1, index=dates, columns=close.columns),
+              'trade_available': close.notna().astype(int),
+              'adjustment_segment': pd.DataFrame(1., index=dates, columns=close.columns),
+              'daily_return': pd.DataFrame(0., index=dates, columns=close.columns),
+              'delisting_event': pd.DataFrame(0, index=dates, columns=close.columns),
+              'indices_total_return_close': pd.DataFrame({'SPY': 100.}, index=dates)}
+    fields['daily_return'].loc['20230105', 'a'] = -.5
+    fields['delisting_event'].loc['20230105', 'a'] = 1
+    for name, frame in fields.items():
+        frame.to_pickle(p/f'{name}.pkl')
+    m = Market(tmp_path)
+    assert m.ret[2, 0] == 0  # finite stale mark previously masked the loss
+    score = pd.DataFrame([[2., 1.]]*4, index=dates, columns=close.columns)
+    daily, _, events, _ = m.backtest(score, dates[0], dates[-1], top_n=1,
+                                    cost_bps=0, rebalance_every=5)
+    assert daily.loc['20230105', 'gross_return'] == -.5
+    assert daily.loc['20230105', 'cash_weight'] == 1
+    assert daily.net_nav.iloc[-1] == .5
+    assert events.iloc[0].policy == 'terminal_source_return_cash_settlement'
+
+
+def test_terminal_last_mark_assumption_is_logged_even_if_mark_is_finite():
+    m = market()
+    m.terminal[2, 0] = True
+    m.source_return[2, 0] = np.nan
+    m.ret[2, 0] = 0.
+    score = pd.DataFrame([[2., 1.]]*7, index=m.index, columns=m.columns)
+    _, _, events, _ = m.backtest(score, m.index[0], m.index[-1], top_n=1,
+                                cost_bps=0, rebalance_every=5)
+    assert events.iloc[0].policy == 'terminal_last_mark_cash_assumption'
+
+
+def test_top100_boundary_ties_do_not_depend_on_panel_column_order():
+    names = pd.Index([f'S{i:03d}' for i in range(250)])
+    dates = pd.Index(['20230103', '20230104', '20230105', '20230106'])
+    values = pd.Series(np.r_[np.ones(200)*2, np.ones(50)], index=names)
+    def held(columns):
+        m = Market.__new__(Market)
+        m.index, m.columns = dates, columns
+        shape = (len(dates), len(columns))
+        m.close = np.full(shape, 100.)
+        m.universe = m.tradable = np.ones(shape, dtype=bool)
+        m.ret = m.source_return = np.zeros(shape)
+        m.terminal = np.zeros(shape, dtype=bool)
+        m.spy = np.zeros(len(dates))
+        score = pd.DataFrame([values.reindex(columns).to_numpy()]*len(dates), index=dates, columns=columns)
+        _, w, _, _ = m.backtest(score, dates[0], dates[-1], top_n=100,
+                                 cost_bps=0, rebalance_every=5, weights=True)
+        return set(w.columns[w.iloc[2]>0])
+    chosen = held(names)
+    assert len(chosen) == 100
+    assert chosen <= set(names[:200])  # score priority is preserved
+    assert chosen != set(names[:100])  # no inherited SID-order portfolio
+    assert chosen == held(names[::-1])
+    assert chosen == held(names)

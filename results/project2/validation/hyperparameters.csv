@@ -1,7 +1,0 @@
-model,candidate,params,rankic,defined_rankic_day_fraction
-ridge,0,"{""alpha_per_sample"": 0.001}",0.029358195438710266,1.0
-ridge,1,"{""alpha_per_sample"": 0.01}",0.029963040474752352,1.0
-lasso,0,"{""alpha"": 0.0001}",0.030471013580771596,1.0
-lasso,1,"{""alpha"": 0.0005}",0.04054110175991209,0.5145228215767634
-xgboost,0,"{""max_depth"": 2}",0.029915440693195263,1.0
-xgboost,1,"{""max_depth"": 3}",0.028188096632731557,1.0

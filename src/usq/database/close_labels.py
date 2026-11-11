@@ -13,7 +13,7 @@ import pandas as pd
 from .reader import ResearchDatabase
 from .common import digest, dump, save_panel
 from .complete import write_checksums
-from usq.data.labels import close_forward_returns, daily_close_returns
+from usq.data.labels import NEXT_CLOSE_LABEL_POLICY, close_forward_returns, daily_close_returns
 
 
 def build_close_labels(source, output):
@@ -27,11 +27,16 @@ def build_close_labels(source, output):
     for name, entry in db.meta['stock_fields'].items():
         if digest(source/'panels'/(name+'.pkl')) != entry['sha256']:
             raise ValueError('Source snapshot changed: '+name)
-    if any(name in db.meta['stock_fields'] for name in ['ylabel', 'label_10', 'forward_10d_raw', 'returns', 'label_available']):
-        raise ValueError('Expected an unlabeled base snapshot; do not overwrite existing target conventions')
+    derived = ['returns', 'forward_10d_raw', 'ylabel', 'label_10', 'label_available']
+    if any(name in db.meta['stock_fields'] for name in derived[1:]):
+        old_policy = db.meta.get('label_policy', {})
+        if old_policy.get('formula') not in {
+            'close_adj[t+10]/close_adj[t]-1', NEXT_CLOSE_LABEL_POLICY['formula']
+        }:
+            raise ValueError('Unknown source target convention; use a documented base or close10 snapshot')
     raw, end = close_forward_returns(price, 10, segment)
     daily = daily_close_returns(price, segment)
-    if end.tail(10).notna().any() or raw.tail(10).notna().any().any():
+    if end.tail(11).notna().any() or raw.tail(11).notna().any().any():
         raise AssertionError('Unmatured end-of-snapshot labels must be missing')
     shutil.copytree(source, output, ignore=shutil.ignore_patterns('checksums.sha256', 'completion_verification.json'))
     old_note = output/'补齐说明.md'
@@ -40,18 +45,17 @@ def build_close_labels(source, output):
     manifest = json.loads((output/'metadata/snapshot.json').read_text())
     fields = manifest['stock_fields']
     policy = {
-        'mode': 'close_compound', 'horizon_sessions': 10,
-        'formula': 'close_adj[t+10]/close_adj[t]-1',
+        **NEXT_CLOSE_LABEL_POLICY,
         'aliases': ['forward_10d_raw', 'ylabel', 'label_10'],
         'standardized': False, 'neutralized': False, 'vwap_required': False,
         'returns_field': 'returns[t]=close_adj[t]/close_adj[t-1]-1; backward-looking input, not ylabel',
-        'signal_time': 'after close at t; label_end=t+10 exchange sessions',
-        'execution_note': 'Prediction target only. Cannot transact at t close after observing that close; backtest execution remains no earlier than the next session.',
-        'segment_gate': 'All t..t+10 sessions in the same positive known adjustment_segment; positive finite endpoint prices; no price filling.',
+        'signal_time': 'after close at t; entry=t+1 close; label_end=t+11 exchange sessions',
+        'execution_note': 'Next-close-aligned prediction target. First held return is t+1 close to t+2 close; a forecast horizon is not a mandatory holding period.',
+        'segment_gate': 'All t..t+11 sessions in the same positive known adjustment_segment, including signal-to-entry identity; positive finite entry/exit prices; no price filling.',
         'universe_gate': 'Membership applied at signal date by consumers; future membership/survival not required for labels.',
-        'maturity': 'Keep exact label_end; remove any training row whose label_end is not before the next prediction interval. Last ten sessions are censored.',
+        'maturity': 'Keep exact label_end; remove any training row whose label_end is not before the next prediction interval. Last eleven signal sessions are censored.',
         'missing_terminal_event_limit': 'Missing exit close (including delisting without executable quote) stays NaN, not zero. Original terminal-event ledger remains needed for reliable portfolio accounting.'}
-    common = 'Unneutralized, unstandardized ten-session adjusted-close endpoint return. Prediction target, not executable trading P&L. No VWAP input. See label_policy.'
+    common = 'Next-close-aligned target close_adj[t+11]/close_adj[t+1]-1; ten holding intervals, eleven-session signal-to-exit offset. Unneutralized and unstandardized. No VWAP input. See label_policy.'
     for field in ['forward_10d_raw', 'ylabel', 'label_10']:
         fields[field] = save_panel(raw, output/'panels'/(field+'.pkl'), db.dates, db.sids)
         fields[field].update({'source': 'close_adj + adjustment_segment', 'unit': 'decimal ten-session return', 'notes': common})
@@ -63,9 +67,10 @@ def build_close_labels(source, output):
     fields['label_available'].update({'source': 'finite forward_10d_raw', 'unit': '0/1', 'notes': 'Not a stock universe or tradability flag.'})
     end.to_csv(output/'panels/label_end.csv', index_label='date')
     dump(policy, output/'panels/label_metadata.json')
-    manifest.update({'status': 'close10_labeled_research_prototype', 'research_accepted': False,
+    manifest.update({'status': 'next_close10_v2_labeled_research_prototype', 'research_accepted': False,
         'created_utc': datetime.now(timezone.utc).isoformat(),
         'label_policy': policy, 'parent_snapshot_sha256': digest(source/'metadata/snapshot.json'),
+        'parent_checksums_sha256': digest(source/'checksums.sha256') if (source/'checksums.sha256').exists() else None,
         'label_end_sha256': digest(output/'panels/label_end.csv'),
         'label_code_sha256': digest(Path(__file__)),
         'label_operator_code_sha256': digest(Path(__file__).parents[1]/'data/labels.py')})
@@ -73,6 +78,7 @@ def build_close_labels(source, output):
     dictionary = pd.read_csv(output/'metadata/data_dictionary.csv')
     added = [{'field': name, 'source': fields[name]['source'], 'unit': fields[name]['unit'], 'notes': fields[name]['notes']}
              for name in ['returns', 'forward_10d_raw', 'ylabel', 'label_10', 'label_available']]
+    dictionary = dictionary.loc[~dictionary.field.isin(derived)]
     pd.concat([dictionary, pd.DataFrame(added)], ignore_index=True).to_csv(output/'metadata/data_dictionary.csv', index=False)
     research = (price.index >= '20150101') & (price.index <= '20251231')
     denominator = universe.loc[research].to_numpy().sum()
@@ -82,7 +88,8 @@ def build_close_labels(source, output):
         'label_coverage_on_supplied_2015_2025_universe': coverage,
         'label_missing_pct_on_supplied_2015_2025_universe': 100*(1-coverage),
         'last_signal_date_with_calendar_matured_target': str(end.dropna().index[-1]),
-        'last_ten_rows_all_missing': True, 'aliases_identical': True,
+        'last_eleven_rows_all_missing': True, 'aliases_identical': True,
+        'label_version': NEXT_CLOSE_LABEL_POLICY['label_version'],
         'source_snapshot_unchanged': True, 'vwap_used_for_label': False,
         'legacy_backtest_engine_migrated': True,
         'warning': 'Ordinary workflow/backtest/Barra paths use close_adj with next-close execution. Terminal events and missing held industry still require explicit source resolution; no formal full-period strategy has been validated.'}
@@ -104,25 +111,25 @@ def build_close_labels(source, output):
     for name, entry in db.meta['stock_fields'].items():
         if digest(source/'panels'/(name+'.pkl')) != entry['sha256']:
             raise AssertionError('Original snapshot modified')
-    note = f'''# 十日收盘收益标签版
+    note = f'''# 次日收盘入场的十日收益标签版（v2）
 
-本目录是在已补齐数据基础上生成的独立派生快照，原补齐库和下载文件均未修改。
+本目录是在已补齐数据基础上生成的独立派生快照，原补齐库、旧标签快照和下载文件均未修改；旧标签及旧训练结果不沿用为 v2 结果。
 
 股票字段：{len(fields)} 个；完整面板 {len(db.dates):,} 日 × {len(db.sids):,} 个稳定 SID。日期 {db.dates[0]}—{db.dates[-1]}。
 
 ## 统一标签
 
-`ylabel[T] = close_adj[T+10] / close_adj[T] - 1`
+`ylabel[T] = close_adj[T+11] / close_adj[T+1] - 1`
 
-T+10 为第十个后续交易日，不是自然日。该值等于完整日收益链的复合收益，不是十个简单日收益的算术和。`forward_10d_raw`、`ylabel`、`label_10` 完全相同；不做市值/行业中性化或截面标准化。`returns` 是向后看的单日复权收盘收益，原供应商 `daily_return` 原样保留。
+T+1 收盘入场，T+11 收盘退出，恰好十个持仓收益区间；均为交易日，不是自然日。该值等于完整日收益链的复合收益，不是十个简单日收益的算术和。`forward_10d_raw`、`ylabel`、`label_10` 完全相同；不做市值/行业中性化或截面标准化。`returns` 是向后看的单日复权收盘收益，原供应商 `daily_return` 原样保留。
 
 每段必须保持同一个正且已知的复权分段，端点价格为正且有限，不跨未知证券/收益链接。未来股票池资格不参与标签计算，缺失价格不填零。`label_available` 为明确 0/1；`label_end.csv` 记录准确结束日期。训练切分必须按标签结束日期清除未到期样本。
 
-2015—2025 原股票池内标签覆盖率约 **{coverage*100:.3f}%**，包括期末截尾造成的缺失。快照最后十个交易日无完整未来十日价格，标签全部缺失；最后一个日历上可到期的信号日为 **{audit['last_signal_date_with_calendar_matured_target']}**。
+2015—2025 原股票池内标签覆盖率约 **{coverage*100:.3f}%**，包括期末截尾造成的缺失。快照最后十一个信号交易日无完整入场后十日价格，标签全部缺失；最后一个日历上可到期的信号日为 **{audit['last_signal_date_with_calendar_matured_target']}**。
 
 ## 标签与交易不能混淆
 
-标签是预测目标，不是收盘后还能按同一收盘价成交的收益。信号在 T 收盘后形成，实际回测最早 T+1 执行，按真实执行/记账时点计算持仓收益及费用；SPY 基准时点必须匹配。十日预测期限不等于强制每笔持仓十天，也不擅自改变已约定的调仓与平滑规则。
+标签是预测目标，不是收盘后还能按同一收盘价成交的收益。信号在 T 收盘后形成，实际回测 T+1 收盘执行、T+2 记录第一段持仓收益，按真实执行/记账时点计算持仓收益及费用；SPY 基准时点必须匹配。十日预测期限不等于强制每笔持仓十天，也不擅自改变已约定的调仓与平滑规则。
 
 ## VWAP 与研究范围
 

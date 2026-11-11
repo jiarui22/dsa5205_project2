@@ -15,20 +15,26 @@ class CloseLabelTests(unittest.TestCase):
         self.price = pd.DataFrame({'A': 100*1.01**np.arange(30)}, index=self.dates)
         self.segment = self.price*0+1
 
-    def test_ten_over_zero_not_eleven_over_one_or_arithmetic_sum(self):
+    def test_next_close_ten_intervals_and_exact_exit(self):
         y, end = close_forward_returns(self.price, segment=self.segment)
         self.assertAlmostEqual(y.iloc[0, 0], 1.01**10-1)
         self.assertNotAlmostEqual(y.iloc[0, 0], .1)
-        self.assertEqual(end.iloc[0], self.dates[10])
-        self.assertTrue(y.tail(10).isna().all().all())
-        self.assertTrue(end.tail(10).isna().all())
+        self.assertEqual(end.iloc[0], self.dates[11])
+        self.assertTrue(y.tail(11).isna().all().all())
+        self.assertTrue(end.tail(11).isna().all())
         p = self.price.copy(); p.iloc[0, 0] *= 2
         y2, _ = close_forward_returns(p, segment=self.segment)
-        self.assertAlmostEqual(y2.iloc[0, 0], self.price.iloc[10, 0]/p.iloc[0, 0]-1)
+        self.assertEqual(y2.iloc[0, 0], y.iloc[0, 0])  # signal-close move is not held
+        p.iloc[1, 0] *= 3
+        y3, _ = close_forward_returns(p, segment=self.segment)
+        self.assertAlmostEqual(y3.iloc[0, 0], p.iloc[11, 0]/p.iloc[1, 0]-1)
+        legacy, old_end = close_forward_returns(p, segment=self.segment, delay=0)
+        self.assertAlmostEqual(legacy.iloc[0, 0], p.iloc[10, 0]/p.iloc[0, 0]-1)
+        self.assertEqual(old_end.iloc[0], self.dates[10])
 
-    def test_label_does_not_depend_on_future_beyond_t_plus_ten(self):
+    def test_label_does_not_depend_on_future_beyond_exit(self):
         y, _ = close_forward_returns(self.price, segment=self.segment)
-        p = self.price.copy(); p.iloc[11:, 0] *= 100
+        p = self.price.copy(); p.iloc[12:, 0] *= 100
         changed, _ = close_forward_returns(p, segment=self.segment)
         self.assertEqual(y.iloc[0, 0], changed.iloc[0, 0])
 
@@ -39,10 +45,11 @@ class CloseLabelTests(unittest.TestCase):
             self.assertTrue(pd.isna(y.iloc[0, 0]))
 
     def test_missing_end_price_is_not_zero_and_never_filled(self):
-        for bad in [0, np.nan, np.inf]:
-            p = self.price.copy(); p.iloc[10, 0] = bad
-            y, _ = close_forward_returns(p, segment=self.segment)
-            self.assertTrue(pd.isna(y.iloc[0, 0]))
+        for endpoint in (1, 11):
+            for bad in [0, np.nan, np.inf]:
+                p = self.price.copy(); p.iloc[endpoint, 0] = bad
+                y, _ = close_forward_returns(p, segment=self.segment)
+                self.assertTrue(pd.isna(y.iloc[0, 0]))
 
     def test_intermediate_price_missing_requires_segment_evidence(self):
         p = self.price.copy(); p.iloc[5, 0] = np.nan
@@ -77,6 +84,23 @@ class CloseLabelTests(unittest.TestCase):
             self.assertFalse(meta['vwap_required'])
             self.assertFalse(meta['standardize'])
             self.assertIsNone(meta['neutralization'])
+            self.assertEqual(meta['label_version'], 'next_close_10d_v2')
+            self.assertEqual(meta['entry_offset'], 1)
+            self.assertEqual(meta['exit_offset'], 11)
+
+    def test_signal_to_entry_identity_change_is_rejected(self):
+        seg = self.segment.copy()
+        seg.iloc[1:] = 2
+        y, _ = close_forward_returns(self.price, segment=seg)
+        self.assertTrue(pd.isna(y.iloc[0, 0]))
+
+    def test_delay_and_horizon_validation(self):
+        for delay in (-1, True, 1.5):
+            with self.assertRaises(ValueError):
+                close_forward_returns(self.price, delay=delay)
+        for horizon in (0, False, 1.5):
+            with self.assertRaises(ValueError):
+                close_forward_returns(self.price, horizon=horizon)
 
     def test_raw_y_cannot_be_silently_standardized(self):
         with tempfile.TemporaryDirectory() as tmp:

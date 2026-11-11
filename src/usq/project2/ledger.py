@@ -5,9 +5,39 @@ reselect names using tomorrow's quotes. Unfillable buys stay cash; unsellable
 positions remain held. Corporate settlement exceptions are saved as event rows.
 """
 from __future__ import annotations
+import hashlib
 import numpy as np
 import pandas as pd
 from usq.backtest.metrics import performance
+
+
+def stable_tie_ranks(columns, seed=5205):
+    """Outcome-independent, column-order-invariant ordering for tied scores."""
+    order = sorted(range(len(columns)),
+                   key=lambda j: (hashlib.sha256(f'{seed}:{columns[j]}'.encode()).digest(), str(columns[j])))
+    ranks = np.empty(len(columns), dtype=np.int64)
+    ranks[order] = np.arange(len(columns))
+    return ranks
+
+
+def top_positions(values, eligible, tie_ranks, top_n=100):
+    positions = np.flatnonzero(eligible & np.isfinite(values))
+    if len(positions) == 0 or np.unique(values[positions]).size < 2:
+        return positions[:0]  # no ordering information: cash
+    order = np.lexsort((tie_ranks[positions], -values[positions]))
+    return positions[order[:top_n]]
+
+
+def equal_count_group(values, eligible, tie_ranks, group, groups):
+    """Exhaustive ordered buckets; ties use the same fixed SID hashes as Top100."""
+    if not 1 <= group <= groups or groups < 2:
+        raise ValueError('Require 1 <= group <= groups and groups >= 2')
+    positions = np.flatnonzero(eligible & np.isfinite(values))
+    if not len(positions) or np.unique(values[positions]).size < 2:
+        return positions[:0]
+    order = positions[np.lexsort((tie_ranks[positions], values[positions]))]
+    buckets = np.arange(len(order))*groups//len(order)+1
+    return order[buckets == group]
 
 
 class Market:
@@ -33,20 +63,39 @@ class Market:
         spy = load("indices_total_return_close")["SPY"]
         self.spy = spy.pct_change(fill_method=None).to_numpy()
 
-    def backtest(self, scores, start, end, *, cost_bps=10, rebalance_every=5,
-                 smooth=1, top_n=100, group=None, groups=5, weights=False,
-                 all_eligible=False):
-        if not scores.columns.equals(self.columns):
-            raise ValueError("score sid order differs")
+    def _prepare_signal(self, scores, smooth):
         x = scores.reindex(self.index).where(self.universe)
-        # Equal predictions convey no ordering: go to cash, not first 100 SIDs.
-        if not all_eligible:
-            varying = x.nunique(axis=1, dropna=True).ge(2)
-            x = x.where(varying, axis=0)
+        varying = x.nunique(axis=1, dropna=True).ge(2)
+        x = x.where(varying, axis=0)
         pct = x.rank(axis=1, pct=True)
         if smooth > 1:
             pct = pct.rolling(smooth, min_periods=1).mean().where(x.notna())
-        signal = pct.to_numpy()
+        return pct.to_numpy()
+
+    def _select_positions(self, values, eligible, tie_ranks, top_n, held, signal_index):
+        """Extension hook; the default preserves the frozen Top100 rule."""
+        return top_positions(values, eligible, tie_ranks, top_n)
+
+    def _allocation_weights(self, order, signal_index):
+        """Extension hook; default allocation remains equal weight."""
+        return np.full(len(order),1/len(order))
+
+    def backtest(self, scores, start, end, *, cost_bps=10, rebalance_every=5,
+                 smooth=1, top_n=100, group=None, groups=5, weights=False,
+                 all_eligible=False, tie_seed=5205, grouping='score_percentile'):
+        if not scores.columns.equals(self.columns):
+            raise ValueError("score sid order differs")
+        if grouping not in ('score_percentile', 'equal_count'):
+            raise ValueError('Unknown grouping method')
+        if all_eligible:
+            x = scores.reindex(self.index).where(self.universe)
+            pct = x.rank(axis=1, pct=True)
+            if smooth > 1:
+                pct = pct.rolling(smooth, min_periods=1).mean().where(x.notna())
+            signal = pct.to_numpy()
+        else:
+            signal = self._prepare_signal(scores, smooth)
+        tie_ranks = stable_tie_ranks(self.columns, tie_seed)
         lo, hi = self.index.searchsorted(start), self.index.searchsorted(end, side="right")
         current = np.zeros(len(self.columns), dtype=float)
         records, holdings, events = [], [], []
@@ -55,14 +104,15 @@ class Market:
             held = current.copy()
             r = self.ret[i].astype(float).copy()
             terminal = self.terminal[i] & (held > 0)
-            missing = (held > 0) & ~np.isfinite(r)
-            source_ok = missing & terminal & np.isfinite(self.source_return[i]) & (self.source_return[i] >= -1)
+            # A terminal payout can be hidden by a finite stale mark (including
+            # a zero ffill return). Terminal source returns take precedence.
+            source_ok = terminal & np.isfinite(self.source_return[i]) & (self.source_return[i] >= -1)
             r[source_ok] = self.source_return[i, source_ok]
             for j in np.flatnonzero(source_ok):
                 events.append({"date": self.index[i], "sid": self.columns[j], "policy": "terminal_source_return_cash_settlement", "weight": held[j], "return": float(r[j])})
-            unresolved = (held > 0) & ~np.isfinite(r)
+            unresolved = ((held > 0) & ~np.isfinite(r)) | (terminal & ~source_ok)
             for j in np.flatnonzero(unresolved):
-                events.append({"date": self.index[i], "sid": self.columns[j], "policy": "terminal_last_mark_cash_assumption" if terminal[j] else "stale_last_mark_pending_quote", "weight": held[j], "return": 0.})
+                events.append({"date": self.index[i], "sid": self.columns[j], "policy": "terminal_last_mark_cash_assumption" if terminal[j] else "stale_last_mark_pending_quote", "weight": held[j], "return": float(r[j]) if np.isfinite(r[j]) else 0.})
             r[~np.isfinite(r)] = 0.  # explicit last-mark accounting, exceptions above
             if ((held > 0) & (r < -1)).any():
                 raise ValueError("invalid held simple return")
@@ -87,12 +137,14 @@ class Market:
                             raise ValueError("all_eligible is an allocation baseline, not a score group")
                         order = positions
                     elif group is None:
-                        order = positions[np.argsort(-signal[i-1, positions], kind="stable")[:top_n]]
+                        order = self._select_positions(signal[i-1], eligible, tie_ranks, top_n, held>0, i-1)
+                    elif grouping == 'equal_count':
+                        order = equal_count_group(signal[i-1], eligible, tie_ranks, group, groups)
                     else:
                         bins = np.minimum(np.floor((np.nan_to_num(signal[i-1], nan=-1)-.5/max(len(positions), 1))*groups).astype(int)+1, groups)
                         order = positions[bins[positions] == group]
                     if len(order):
-                        desired[order] = 1/len(order)
+                        desired[order] = self._allocation_weights(order, i-1)
                 executable = self.tradable[i] & ~self.terminal[i]
                 desired[~executable] = 0.  # no replacement using future quotes
                 locked = ~executable & (assets > 0)
@@ -139,5 +191,7 @@ class Market:
                        relative_nav_annual_return=relative["annual_return"],
                        relative_nav_max_drawdown=relative["max_drawdown"],
                        exception_rows=len(events), cost_bps=cost_bps, smooth=smooth,
-                       rebalance_every=rebalance_every, timing="T signal -> T+1 close trade -> T+2 first held return")
+                       rebalance_every=rebalance_every, tie_seed=tie_seed,
+                       grouping=grouping,
+                       timing="T signal -> T+1 close trade -> T+2 first held return")
         return daily, pd.DataFrame(holdings, index=daily.index, columns=self.columns) if weights else None, pd.DataFrame(events), summary

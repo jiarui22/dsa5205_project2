@@ -98,7 +98,7 @@ def normalize_records(raw, dates, *, allow_final_date_fallback=True):
     values=release.to_numpy(dtype='datetime64[ns]')
     pos=np.searchsorted(sessions,values,side='right')
     accepted=release.notna().to_numpy() & (pos<len(sessions))
-    avail=np.full(len(d),np.datetime64('NaT'),dtype='datetime64[ns]')
+    avail=np.full(len(d),np.datetime64('NaT','ns'),dtype='datetime64[ns]')
     avail[accepted]=sessions[pos[accepted]]
     d['release_date']=release
     d['available_ts']=pd.to_datetime(avail)

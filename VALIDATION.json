@@ -1,0 +1,90 @@
+{
+  "passed": true,
+  "validation_date": "2026-11-11",
+  "upstream_commit": "a4a31d6f822f6e2ab1099993266454799d9e8c31",
+  "fresh_kernel": true,
+  "code_cells": 13,
+  "execution_counts": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "elapsed_seconds": 5217.5,
+  "fresh_learner_fits": 396,
+  "reused_fits": 0,
+  "portfolio_ledgers": 38,
+  "unit_tests_passed": 64,
+  "unit_test_command": "PYTHONPATH=src python -m pytest tests -q",
+  "portfolio_audit_passed": true,
+  "maximum_independent_holdings_error": 1.2854668603873298e-08,
+  "release_comparison": {
+    "portfolio_summary.csv": {
+      "matched": true,
+      "rows": 38,
+      "maximum_absolute_differences": {
+        "annual_return": 0.0,
+        "annual_volatility": 0.0,
+        "sharpe": 0.0,
+        "max_drawdown": 0.0,
+        "mean_daily_turnover": 0.0,
+        "mean_cash": 0.0,
+        "spy_annual_return": 0.0
+      }
+    },
+    "WQ_screen.csv": {
+      "matched": true,
+      "rows": 36,
+      "maximum_absolute_differences": {
+        "direction": 0.0,
+        "early_rankic": 0.0,
+        "stability_rankic_signed": 0.0,
+        "stability_coverage": 0.0
+      }
+    },
+    "frozen_hyperparameters.json": {
+      "matched": true
+    },
+    "frozen_family.json": {
+      "matched": true
+    }
+  },
+  "source_snapshot_unchanged": true,
+  "source_files_hash_verified": 75,
+  "notebook_sha256": "7b635dfeedd2e91198b267e117b7662f4f48ffdc7ce24e0fc315a4c6febd6f0b",
+  "report_sha256": "fe4a2948121a8f2ca1749a4687ae028a97ed8be5ca6b40c7fb3329f5f91de0a4",
+  "report_pages": 21,
+  "report_visual_qa_passed": true,
+  "report_qa": {
+    "all_pages_rendered_and_reviewed": true,
+    "offpage_text_characters": 0,
+    "latex_overfull_warnings": 0,
+    "latex_undefined_references": 0
+  },
+  "raw_data_included": false,
+  "fitted_models_included": false,
+  "research_algorithm_changed_by_this_revision": false,
+  "historical_evaluation_previously_inspected": true,
+  "forecast_window_years": 5,
+  "evaluation_period": "2024-2025",
+  "remaining_deliverables": [
+    "Team confirmation of individual contributions and required student IDs",
+    "New video"
+  ],
+  "notes": [
+    "Data-path configuration and missing-file preflight added; source data remains read-only.",
+    "Reused validation Python environment points to the original download; tests explicitly select this checkout with PYTHONPATH=src.",
+    "Unused Ridge CV candidates can have small numerical IC differences; frozen selections and all portfolio summary metrics match.",
+    "The current main design uses five-year forecast windows and fundamental/combined/engineered comparisons, rather than the earlier expanding-from-2015 and price-only versus mixed request.",
+    "This verification record was generated locally before publication."
+  ]
+}

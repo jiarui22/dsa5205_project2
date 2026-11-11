@@ -10,15 +10,20 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from usq.data.labels import NEXT_CLOSE_LABEL_POLICY
 from .factors import rank
 from .ledger import Market
-from .screen import information_series, write_json
+from .screen import POLICY as FACTOR_POLICY, information_series, write_json
+from .protocol import bind_inputs
 
 
 MODEL_POLICY = {
+    'label_policy': NEXT_CLOSE_LABEL_POLICY,
+    'evaluation_status': 'v2 revision on previously inspected 2023-2025 data; not a new blind holdout',
+    'tie_break': 'Top100 boundary ties: SHA256(seed=5205,SID), column-order invariant; constant scores stay cash',
     "seed": 5205, "training_start": "20150101", "window": "expanding, never rolling fixed length",
     "label_purge": "label_end strictly before prediction half start; no incomplete targets",
-    "target": "raw 10-session close_adj return, no neutralization, clipping or standardization",
+    "target": "close_adj[T+11]/close_adj[T+1]-1; raw ten-session next-close return, no neutralization, clipping or standardization",
     "features": "current eligible cross-sectional percentile minus .5, plus missing indicators; missing percentile=0",
     "sample_rule": "same pool and dates for A/B; at least one observed selected WQ factor; finite mature target in training",
     "constant_predictions": "undefined IC and RankIC; all-equal scores imply cash, never SID-order stock selection; invalid validation candidates cannot win",
@@ -48,19 +53,30 @@ def halves(year):
 class Design:
     def __init__(self, database, output):
         self.root, self.out = Path(database), Path(output)
+        protocol_path = self.out/'research_protocol.json'
+        if json.loads(protocol_path.read_text()) != FACTOR_POLICY:
+            raise ValueError('Factor screen uses a different target protocol; rerun it in a new output directory')
         selection = json.loads((self.out/"factor_selection.json").read_text())
+        if selection['protocol_sha256'] != hashlib.sha256(protocol_path.read_bytes()).hexdigest():
+            raise ValueError('Factor selection protocol hash differs')
         self.names = selection["wq"] + selection["fundamental"]
         if not selection["wq"]:
             raise ValueError("No WQ factor passed the frozen criteria")
         self.nq = len(selection["wq"])
         self.u = pd.read_pickle(self.root/"panels/universe.pkl")
         self.index, self.columns = self.u.index, self.u.columns
-        self.y = pd.read_pickle(self.root/"panels/ylabel.pkl").to_numpy()
-        self.end = pd.read_csv(self.root/"panels/label_end.csv", dtype=str).set_index("date")["label_end"].reindex(self.index)
+        self.end = bind_inputs(self.root, self.out, self.u)
+        target = pd.read_pickle(self.root/"panels/ylabel.pkl")
+        if not target.index.equals(self.index) or not target.columns.equals(self.columns):
+            raise ValueError('Full target axes differ from universe')
+        self.y = target.to_numpy()
         cache = self.out/"design"
         cache.mkdir(exist_ok=True)
         shape = (len(self.index), len(self.columns), 2*len(self.names))
-        signature = {"features": self.names, "shape": list(shape), "policy": MODEL_POLICY["features"]}
+        signature = {"features": self.names, "shape": list(shape), "policy": MODEL_POLICY["features"],
+                     "directions": {n: selection['directions'][n] for n in self.names},
+                     "selection_sha256": hashlib.sha256((self.out/'factor_selection.json').read_bytes()).hexdigest(),
+                     "input_signature_sha256": hashlib.sha256((self.out/'input_signature.json').read_bytes()).hexdigest()}
         if not (cache/"meta.json").exists():
             arr = np.lib.format.open_memmap(cache/"features.npy", mode="w+", dtype="float32", shape=shape)
             observed = np.zeros(self.u.shape, dtype=bool)
@@ -91,6 +107,7 @@ class Design:
         y = np.asarray(self.y.ravel()[positions], dtype="float32")
         used_dates = np.flatnonzero(valid.any(axis=1))
         meta = {"samples": len(y), "feature_count": nf, "train_first": self.index[used_dates[0]],
+                "label_version": NEXT_CLOSE_LABEL_POLICY['label_version'],
                 "train_last_signal": self.index[used_dates[-1]],
                 "train_last_label_end": str(self.end.iloc[used_dates].max()),
                 "forecast_start": start, "family": family}
@@ -115,10 +132,10 @@ def fit_model(kind, params, x, y):
     if kind == "ridge":
         model = Ridge(alpha=params["alpha_per_sample"]*len(y), solver="cholesky")
     elif kind == "lasso":
-        model = Lasso(alpha=params["alpha"], max_iter=500, tol=1e-5, selection="cyclic")
+        model = Lasso(alpha=params["alpha"], max_iter=5000, tol=1e-5, selection="cyclic", precompute=True)
     elif kind == "xgboost":
         from xgboost import XGBRegressor
-        model = XGBRegressor(**MODEL_POLICY["xgboost_fixed"], **params, objective="reg:squarederror")
+        model = XGBRegressor(**{**MODEL_POLICY["xgboost_fixed"], **params}, objective="reg:squarederror")
     else:
         raise ValueError(kind)
     with threadpool_limits(limits=4):
@@ -186,7 +203,9 @@ def run(database, output):
     rule_table = pd.DataFrame(rules).sort_values(["sharpe", "mean_daily_turnover"], ascending=[False, True])
     rule_table.to_csv(out/"validation/trading_rules.csv", index=False)
     rule = {"smooth": int(rule_table.iloc[0].smooth), "rebalance_every": int(rule_table.iloc[0].rebalance_every)}
-    write_json({"hyperparameters": chosen, "trading": rule, "frozen_before_test": True}, out/"frozen_model_choices.json")
+    write_json({"hyperparameters": chosen, "trading": rule, "frozen_before_v2_evaluation": True,
+                "evaluation_period_previously_inspected": True,
+                "label_version": NEXT_CLOSE_LABEL_POLICY['label_version']}, out/"frozen_model_choices.json")
     print(json.dumps({"stage": "validation_complete", "choices": chosen, "trading": rule}), flush=True)
     results, all_evaluations, annuals = [], [], []
     for kind in MODEL_POLICY["grids"]:

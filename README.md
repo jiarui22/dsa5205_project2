@@ -1,99 +1,95 @@
-# DSA5205 Project 2 Team 34
+# DSA5205 Project 2 — Equity Strategy Research
 
-美股基本面与量价融合选股研究的代码、英文报告和已完成结果。供 Team 34 继续完善报告、录制视频及复现实验。主结果已经冻结；不要看到 2023-2025 的收益后再重选因子或参数，并将其称为新的样本外结果。
+Team 34: Wan Gehong, Wang Tianyi, Wu Jiarui, Yan Tianao.
 
-## 先看报告和交接清单
+The main entry point is [Equity Strategy Research](notebooks/Equity_Strategy_Research.ipynb). It builds the research dataset from authorized inputs, screens signals, trains and validates models, and evaluates portfolios net of trading costs. See [项目最新进度.md](项目最新进度.md) for the changes since the previous team version and the remaining deliverables.
 
-- [英文报告初稿，25 页，13 张图](reports/Team34_Project2_Report_Draft.pdf)
-- [接手说明和待办](docs/TEAM34_HANDOFF.md)
-- [中文解读与视频建议](reports/Team34_研究解读与交付清单.html)
-- [离线研究结果页](results/project2/研究结果.html)（下载后用浏览器打开）
-- [主回测汇总](results/project2/backtests/summary.csv)
-- [补充组合汇总](results/project2/supplement/portfolio_summary.csv)
+## Setup and execution
 
-PDF 是 2026-11-09 成稿时的快照，文中“未推送”的描述指成稿时状态；代码和报告现已放入本仓库。尚未提供组员姓名、学号和真实个人分工，正式提交前请补齐。
-
-## 已经完成的研究
-
-复现 6 个基本面因子；实现并评估 36 个 WorldQuant 候选，按开发期规则去重后保留 WQ019、WQ040、WQ026、WQ052。Ridge、Lasso、XGBoost 各运行纯量价 A 与融合 B 两组，训练历史从 2015 年累积，每半年从头拟合，不使用固定长度训练窗口。
-
-| 时间 | 用途 |
-| --- | --- |
-| 2015-2018 | 因子初筛与方向 |
-| 2019-2021 | 稳定性与去重 |
-| 2022 | 小网格参数和共同交易规则验证 |
-| 2023-2025 | 六个半年预测期，固定规则回测 |
-
-收益标签为 `close_adj[T+10]/close_adj[T]-1`。交易采用 T 收盘后信号、T+1 收盘执行、T+2 计首段持仓收益；Top100 等权、每 5 个交易日调仓、不额外平滑，每成交 1 美元收取 10bps。
-
-| 模型 | A 净年化 | B 净年化 |
-| --- | ---: | ---: |
-| Ridge | 9.68% | 8.89% |
-| Lasso | 9.02% | 8.82% |
-| XGBoost | 10.56% | 10.10% |
-
-同期 SPY 净值基准年化约 22.86%。加入基本面降低了换手，但没有提高这套学习流程的净复合收益；成对区块置信区间跨零。事后补充的基本面等权评分组合年化约 19.88%，只作诊断，不替换主策略。
-
-## 安装环境
-
-使用 Python 3.13。已在 Python 3.13.5、pandas 3.1.1 上运行；较旧 pandas 可能不能读取团队行业 pickle。所有命令从仓库根目录运行。
+From the repository root, create a Python 3.13 environment and install the project:
 
 ```bash
 python3.13 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-# macOS 的 XGBoost 另需 OpenMP
-brew install libomp
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -e . --no-deps
+.venv/bin/python -m ipykernel install --user --name team34-project2 --display-name "Python (Team 34 Project 2)"
 ```
 
-最后一条仅适用于 macOS。Linux 请使用对应平台的 OpenMP 运行库。
+On macOS, XGBoost may require the OpenMP runtime (`brew install libomp`).
 
-## 没有全量数据库也能先改报告
+Obtain the team's authorized research snapshot and place its contents under `data/`. The notebook expects `data/panels/`, `data/metadata/` and `data/checksums.sha256`. Alternatively, set `DATA_DIRECTORY` in the first notebook code cell to the existing snapshot folder, or set `TEAM34_DATA_DIR` before launching Jupyter. The chosen folder must directly contain `panels/`, `metadata/`, and `checksums.sha256`; do not select `panels/` itself. No second copy or renaming of the database is necessary. The first cell now checks the path and explains missing files before reading any pickle.
 
-仓库包括报告使用的汇总 CSV、逐日组合收益、图表和协议，不包括个股行情、财报、预测宽表或持仓。可以直接修改 `src/usq/project2/paper.py`，然后仅从公开汇总结果重新生成报告：
+For a terminal execution with data stored elsewhere:
 
 ```bash
-MPLCONFIGDIR=/tmp/team34-mpl PYTHONPATH=src python -m usq.project2.paper \
-  --output results/project2 \
-  --pdf-output reports/rebuilt/Team34_Project2_Report_Draft.pdf
+export TEAM34_DATA_DIR="/your/local/path/team17_close10_2014_2025"
 ```
 
-此入口不加载数据库、不重新选因子或训练模型。它会重建 `results/project2/paper_figures/` 中的图表及报告元数据；重建 PDF 输出到忽略目录，不覆盖已审核的英文报告。图表数据可在 `results/project2/` 中追溯。
+This is a supplied market and accounting panel snapshot with a cached SPY benchmark, and is excluded from Git. Only use trusted pickle files. The notebook verifies input hashes, audits coverage and financial availability, and writes a separate cleaned dataset with rebuilt labels. The GitHub ZIP alone does not include `open.pkl` or the other database fields.
 
-## 有相同数据库后复现实验
-
-每位组员自行取得团队授权共享的同一快照，设置 `DATA` 指向该目录。标准日面板、元数据及哈希保持原样；不要上传商业原始文件、个股宽表或凭据。
+Open the notebook with the **Python (Team 34 Project 2)** kernel and choose **Restart Kernel → Run All**. A terminal run from the repository root is also supported:
 
 ```bash
-DATA=../research_database
-OUT=../team34_research_fresh
-PYTHONPATH=src python -m usq.project2.run --database "$DATA" --output "$OUT" --all
-PYTHONPATH=src python -m usq.project2.supplement --database "$DATA" --output "$OUT"
-PYTHONPATH=src python -m usq.project2.risk --database "$DATA" --output "$OUT" --supplement
-MPLCONFIGDIR=/tmp/team34-mpl PYTHONPATH=src python -m usq.project2.paper \
-  --database "$DATA" --output "$OUT" --pdf-output "$OUT/Team34_Report.pdf"
-PYTHONPATH=src python -m pytest tests -o addopts='' -q
+.venv/bin/jupyter nbconvert --to notebook --execute \
+  --ExecutePreprocessor.kernel_name=team34-project2 \
+  --ExecutePreprocessor.timeout=-1 \
+  --output=Equity_Strategy_Research.executed \
+  --output-dir=runs \
+  notebooks/Equity_Strategy_Research.ipynb
 ```
 
-输入目录至少应有 `panels/`（含 `universe.pkl`、`close_adj.pkl`、`ylabel.pkl`、`label_end.csv` 等）、`metadata/fundamental_quarterly.parquet` 和 `checksums.sha256`。所需字段和单位见 [数据字典](data_schema/data_dictionary.csv)。数据库构建与补齐程序保存在 `src/usq/database/`，说明见 `docs/DATABASE_BUILD.md` 和 `docs/DATA_COMPLETION.md`；旧示例配置只下载样本行情，不能靠它重新取得本研究的完整商业数据。
+For a fresh-kernel execution with cell progress and a saved failure record, without registering a user-level kernel, use:
 
-## 目录
+```bash
+.venv/bin/python scripts/execute_notebook.py \
+  --data "/your/local/path/team17_close10_2014_2025" \
+  --output runs/notebook_validation
+```
 
-| 目录 | 内容 |
-| --- | --- |
-| `src/usq/project2/` | 本次因子、训练、回测、补充分析和报告入口 |
-| `src/usq/barra/` | 原参考核心及美股适配 |
-| `src/usq/database/` | 数据库构建、补齐和读取 |
-| `reports/` | 审核过的英文 PDF 与中文说明 |
-| `results/project2/` | 可公开的汇总结果、图表、协议及测试记录 |
-| `data_schema/` | 字段字典和独立交易日历，无个股数据 |
-| `tests/` | 公式、时间对齐、账本、数据库与归因测试 |
-| `docs/` | 交接、来源记录和继承的底层文档 |
+Use a new `--output` directory for each attempt. The executed notebook and `execution_status.json` are saved there; the independently constructed database and model artifacts are placed in a new timestamped `runs/experiment_...` directory. The runner stops at the first error and records consecutive code-cell execution counts on success.
 
-`docs/UPSTREAM_README.md` 及部分旧文档描述底层框架早期状态，不是当前研究结果。当前入口以本 README、`src/usq/project2/` 和已冻结结果为准。
+Allow time and disk space for data preparation, 396 model fits, 38 portfolio ledgers and the daily factor model. A fresh execution builds a new timestamped experiment under `runs/` from the supplied snapshot.
 
-## 研究口径
+**Verified release (11 November 2026).** The saved notebook now comes from one successful fresh-kernel, top-to-bottom execution: 13 code cells numbered 1–13, 396 fresh learner fits without checkpoint reuse, and 38 reconciled portfolio ledgers. Execution took approximately 87 minutes on the validation machine. All 64 automated tests passed. Portfolio summary metrics, the WQ screen and frozen choices reproduce upstream commit `a4a31d6`. The updated 21-page English report is [Group_34_Report.pdf](reports/final/Group_34_Report.pdf); its figures and tables use this verified run. See [VALIDATION.json](VALIDATION.json) for verification records. The new video and confirmation of individual team contributions remain pending. The shared source archive excludes the database and fitted models.
 
-财务按公布代理日期排序并 ffill，但不是严格历史 PIT；本轮 WQ 候选不依赖 VWAP，统一标签和回测使用 close_adj。Barra-style 是研究模型，不是商业 MSCI 产品；特异贡献不直接等同 alpha。完整执行规则、来源和局限见英文报告。
+## Research design
 
-代码源自 [Quant_U.S._stocks](https://github.com/Panyuxiang0830/Quant_U.S._stocks)，行情抓取模式参考 [global-stock-data](https://github.com/simonlin1212/global-stock-data)。公式及研报来源见报告参考文献和 [NOTICE](NOTICE)。
+| Stage | Dates and rule |
+|---|---|
+| WQ direction and screening | Calibrate directions in 2015–2017. Screen 36 WQ candidates in 2018–2019 using RankIC, coverage, annual stability and correlation. |
+| Hyperparameter selection | Use expanding-window CV with annual scoring folds in 2020–2022. Compare fundamental, fundamental plus WQ, and engineered features for Ridge, Lasso and XGBoost. |
+| Portfolio selection | In 2023, compare four scores under three weightings: equal, square-root capitalization and capitalization. Select the highest net Sharpe among the 12 candidates with finite Sharpe and mean cash at most 5%. |
+| Chronological evaluation | Evaluate the frozen choices in 2024–2025. ML models refit every half-year on the preceding five calendar years using only labels that matured before the forecast boundary. |
+
+Signals formed at the close are executed at the next close. The supervised target is the adjusted return from T+1 close to T+11 close. Portfolio tests use a Top100 target, rank-150 retention buffer, ten-session rebalancing, 2% formation weight cap and a 10 bps charge per traded dollar. SPY and matched full-pool portfolios are benchmarks. Accounting vintages, universe provenance and unresolved terminal payouts constrain interpretation.
+
+## Results and diagnostics
+
+The 2023 validation selects **six-factor direct scoring with capitalization weights**. Its 2024–2025 net CAGR is **24.92%**, net Sharpe **1.407**, and maximum drawdown **−20.76%**. On the same dates, SPY records **22.19%**, **1.307**, and **−18.76%**, respectively.
+
+- [Portfolio summary](results/portfolio_summary.csv) and [selection record](results/frozen_family.json) document the candidate grid and decision.
+- [Period metrics](results/period_metrics.csv) and [prediction OOS R²](results/period_oos_r2.csv) support the four-panel comparison. The six-factor score is mapped to return units with pooled OLS using mature labels from the same past five-year windows. This diagnostic leaves the portfolio's direct ranking rule intact.
+- The notebook includes the selection, weighting and universe decomposition, plus holdings-based Barra-style attribution for the selected portfolio. [Factor exposures and contributions](results/barra_factors.csv) and [residual alpha](results/barra_alpha.csv) use the available market, SIC industry and nine style factors. Growth is unavailable. Residual alpha is conditional on this research risk model.
+- [Portfolio audit](results/portfolio_audit.json) records ledger reconciliation. Full daily artifacts are written under `runs/`.
+
+Run regression tests from the repository root:
+
+```bash
+.venv/bin/python -m pytest tests -q
+```
+
+Source is under `src/`, tests under `tests/`, and compact result tables under `results/`. The local `data/`, `backups/` and `runs/` directories are excluded from the repository.
+
+## Edit and rebuild the report
+
+The PDF and editable LaTeX are under `reports/final/`. To edit text and compile the supplied tables and figures, no database or model training is needed:
+
+```bash
+cd reports/final
+TEXINPUTS=./tex-support: pdflatex -interaction=nonstopmode -halt-on-error Group_34_Report.tex
+TEXINPUTS=./tex-support: pdflatex -interaction=nonstopmode -halt-on-error Group_34_Report.tex
+```
+
+LaTeX is required. Run twice for the contents and cross-references. For a results-driven report rebuild after a new successful tracked Notebook execution, run `scripts/build_notebook_report.py` from the repository root with `--work` pointing to that run's `runs/experiment_...` directory and `--executed-notebook` pointing to its executed notebook. It requires the clean-run verification record, fresh learner fits, and the ledger audit. Its report prose template is `reports/final/notebook_report_template.tex`; direct edits to the generated `Group_34_Report.tex` are replaced by a future results-driven rebuild.
+
+The supplied history was already inspected in earlier research. The revised 2024–2025 evaluation is chronological, not a newly untouched blind holdout. The latest code uses five-year forecast-training windows and fundamental/combined/engineered input comparisons; these differ from the earlier expanding-window, price-only A versus mixed B design.

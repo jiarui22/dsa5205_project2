@@ -10,10 +10,13 @@ import numpy as np
 import pandas as pd
 
 from usq.database.fundamentals import expand_events
+from usq.data.labels import NEXT_CLOSE_LABEL_POLICY
 from .factors import WQ_IDS, price_inputs, rank, residual, slog, surprise_events, wq
+from .protocol import bind_inputs
 
 
 POLICY = {
+    'label_policy': NEXT_CLOSE_LABEL_POLICY,
     "seed": 5205, "train_start": "20150101", "direction_end": "20181231",
     "selection_end": "20211231", "validation_year": 2022,
     "test_start": "20230101", "test_end": "20251231",
@@ -24,8 +27,8 @@ POLICY = {
     "selection_order": "2019-2021 directional RankIC descending; then average absolute daily rank correlation",
     "financial_units_before_slog": "USD millions",
     "inputs": "as-of daily universe; segment-forward-anchored adjusted OHLC; original shares volume; no VWAP formulas",
-    "temporal_caveat": "latest downloaded financial statements, not strict historical PIT; current research ideas evaluated retrospectively",
-    "label": "close_adj[T+10]/close_adj[T]-1; development labels must end by relevant phase end",
+    "temporal_caveat": "latest downloaded financial statements, not strict historical PIT; revised experiment on previously inspected 2023-2025 outcomes, not a fresh blind holdout",
+    "label": "close_adj[T+11]/close_adj[T+1]-1; development labels must end by relevant phase end",
     "coverage_denominator": "daily universe=1 with a mature finite target",
 }
 
@@ -83,14 +86,13 @@ def run(database, output, reuse_factors=None):
                     shutil.copy2(path, dest)
     panels = root/"panels"
     universe = pd.read_pickle(panels/"universe.pkl")
+    label_end = bind_inputs(root, out, universe, create=True)
     def load(name):
         x = pd.read_pickle(panels/f"{name}.pkl")
         if not x.index.equals(universe.index) or not x.columns.equals(universe.columns):
             raise ValueError(f"Full panel axes differ: {name}")
         return x
     target = load("ylabel")
-    label_end = pd.read_csv(panels/"label_end.csv", dtype=str)
-    label_end = label_end.set_index(label_end.columns[0]).iloc[:, 0].reindex(universe.index)
     dev = (universe.index >= "20150101") & (universe.index <= "20211231")
     ydev = target.loc[dev].where(label_end.loc[dev].le("20211231"), axis=0)
     udev = universe.loc[dev]

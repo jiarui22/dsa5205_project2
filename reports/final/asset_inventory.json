@@ -1,0 +1,38 @@
+{
+  "source_commit": "a4a31d6f822f6e2ab1099993266454799d9e8c31",
+  "notebook_sha256": "7b635dfeedd2e91198b267e117b7662f4f48ffdc7ce24e0fc315a4c6febd6f0b",
+  "verified_code_cells": 13,
+  "fresh_model_fits": 396,
+  "portfolio_ledgers": 38,
+  "selected_case": "fundamental_cap",
+  "data_included": false,
+  "report_phase": "2024-2025",
+  "historical_dates_previously_inspected": true,
+  "figures": [
+    "nb_cv.pdf",
+    "nb_fundamentals.pdf",
+    "nb_periods.pdf",
+    "nb_reference_attribution.pdf",
+    "nb_selected_intervals.pdf",
+    "nb_stress.pdf",
+    "nb_styles.pdf",
+    "nb_universe.pdf",
+    "nb_wealth.pdf"
+  ],
+  "tables": [
+    "nb_annual.tex",
+    "nb_audit.tex",
+    "nb_components.tex",
+    "nb_evaluation.tex",
+    "nb_fundamentals.tex",
+    "nb_hyperparameters.tex",
+    "nb_intervals.tex",
+    "nb_r2.tex",
+    "nb_risk_coverage.tex",
+    "nb_styles.tex",
+    "nb_validation.tex",
+    "nb_weighting.tex",
+    "nb_windows.tex",
+    "nb_wq.tex"
+  ]
+}
