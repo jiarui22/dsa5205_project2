@@ -103,20 +103,22 @@ def link_row(returns, upper, lower, label):
             **active_statistics(returns[upper], returns[lower])}
 
 
-def build(results, tables=None):
+def build(results, tables=None, *, path=None, labels=None):
     """Write the attribution tables beside the other aggregate evidence."""
+    path = CHAIN if path is None else list(path)
+    labels = LINKS if labels is None else labels
     results = Path(results)
     tables = Path(tables) if tables is not None else results/'tables'
     tables.mkdir(parents=True, exist_ok=True)
-    cases = sorted(set(CHAIN[:-1]+MARKET_MODEL_CASES+[f'{kind}_{w}' for kind in ('fundamental', 'pool') for w in WEIGHTINGS]))
+    cases = sorted(set(path[:-1]+MARKET_MODEL_CASES+[f'{kind}_{w}' for kind in ('fundamental', 'pool') for w in WEIGHTINGS]))
     attribution, annual, selection, market_model = [], [], [], []
     for phase in PHASES:
         returns = load_phase(results, phase, cases)
-        for link in chain_attribution(returns, CHAIN):
-            attribution.append({'phase': phase, **link_row(returns, link['upper'], link['lower'], LINKS[link['link']])})
-        attribution.append({'phase': phase, **link_row(returns, CHAIN[0], CHAIN[-1], 'total')})
+        for link in chain_attribution(returns, path):
+            attribution.append({'phase': phase, **link_row(returns, link['upper'], link['lower'], labels[link['link']])})
+        attribution.append({'phase': phase, **link_row(returns, path[0], path[-1], 'total')})
         for year, block in returns.groupby(returns.index.str[:4]):
-            for upper, lower, label in [(u, l, LINKS[f'{u}-{l}']) for u, l in zip(CHAIN[:-1], CHAIN[1:])]+[(CHAIN[0], CHAIN[-1], 'total')]:
+            for upper, lower, label in [(u, l, labels[f'{u}-{l}']) for u, l in zip(path[:-1], path[1:])]+[(path[0], path[-1], 'total')]:
                 annual.append({'phase': phase, 'year': int(year), 'link': label,
                                'return_difference': total_return(block[upper])-total_return(block[lower])})
         for weighting in WEIGHTINGS:

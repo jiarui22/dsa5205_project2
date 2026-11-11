@@ -1,7 +1,7 @@
 {
   "passed": true,
   "portfolios": 38,
-  "maximum_independent_holdings_error": 1.2854668603873298e-08,
+  "maximum_independent_holdings_error": 7.537078045016798e-10,
   "checks": [
     {
       "case": "pool_equal",

@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "report_revision_date": "2026-11-12",
+  "source_upstream_commit": "743b82c5b85b763ea2dde54668bf80d1f026ab32",
+  "report_pages": 21,
+  "report_sha256": "1dff95d706c3801fae88a507c0b0c7aa82e0f9586cec82ff934392d91ddcfb2c",
+  "report_only_revision": true,
+  "research_code_notebooks_and_results_unchanged_from_upstream": true,
+  "all_saved_input_hashes_verified": true,
+  "models_refitted": false,
+  "backtests_replayed": false,
+  "bootstrap_resampled": false,
+  "tests_rerun_for_report": false,
+  "upstream_recorded_tests": 74,
+  "recorded_model_fits": 396,
+  "recorded_portfolio_ledgers": 38,
+  "figures": 9,
+  "generated_tables": 14,
+  "all_21_pages_rendered_and_visually_reviewed": true,
+  "offpage_text_characters": 0,
+  "latex_layout_or_reference_warnings": 0,
+  "number_checks": [
+    "Selected 24.92% / Sharpe 1.407 / MDD -20.76%",
+    "Ridge 12.31%; XGBoost 15.72%",
+    "Costs: 20bps 24.34%; 30bps 23.77%",
+    "Without F4: CAGR 25.33%; Sharpe 1.271",
+    "Attribution: +3.72 / +9.55 / -10.54 pp = +2.73 pp",
+    "Selected-SPY 95% interval [-8.79, +16.40] pp",
+    "XGBoost OOS R2 -0.002735; fundamental-only depth3 configuration",
+    "Risk residual 7.92%; specific linked contribution20.80pp"
+  ],
+  "raw_data_included": false,
+  "fitted_models_included": false,
+  "pending_team_inputs": [
+    "Confirmed individual contributions",
+    "Student IDs if required",
+    "New video"
+  ]
+}

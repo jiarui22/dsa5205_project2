@@ -1,0 +1,23 @@
+{
+  "raw_candidate_SIDs": 7208,
+  "selected_SIDs": 4366,
+  "membership_cells": 5826069,
+  "truncation": [
+    {
+      "end": "2017-06-30",
+      "differing_cells": 0
+    },
+    {
+      "end": "2020-12-31",
+      "differing_cells": 0
+    },
+    {
+      "end": "2022-12-30",
+      "differing_cells": 0
+    }
+  ],
+  "price_proxy": "Unadjusted CRSP close \u00d7 share volume",
+  "numeric_precision": "float64",
+  "security_codes": "SIZ SHRCD 10/11/18; CIZ EQTY/COM/NS",
+  "caveat": "Compustat FIC and PRIUSA are static source descriptors."
+}

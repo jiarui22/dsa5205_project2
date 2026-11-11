@@ -53,13 +53,13 @@ def test_engineered_features_do_not_change_when_future_inputs_change(tmp_path):
     rng=np.random.default_rng(5205)
     close=pd.DataFrame(np.exp(rng.normal(0,.01,(85,2)).cumsum(axis=0))*20,index=dates,columns=columns)
     panels={k:close.copy() for k in ['open','high','low','close']}
-    panels.update(volume=u*100,returns=close.pct_change(),adj_factor=u.copy(),adjustment_segment=u.copy(),market_cap=close*1000)
+    panels.update(volume=u*100,returns=close.pct_change(),daily_return=close.pct_change(),adj_factor=u.copy(),adjustment_segment=u.copy(),market_cap=close*1000)
     folder=tmp_path/'factor_panels';folder.mkdir()
     f=close.copy();f.to_pickle(folder/'F01_EP.pkl')
     study=SimpleNamespace(load=lambda k:panels[k],out=tmp_path,
         selection={'wq':['WQ040'],'fundamental':['F01_EP'],'directions':{'F01_EP':1}})
     first={name:frame.copy() for name,frame,_ in engineered_panels(study,u)}
-    for k in ['open','high','low','close','volume','returns','market_cap']:panels[k].iloc[65:]*=10
+    for k in ['open','high','low','close','volume','returns','daily_return','market_cap']:panels[k].iloc[65:]*=10
     f.iloc[65:]*=-5;f.to_pickle(folder/'F01_EP.pkl')
     second={name:frame.copy() for name,frame,_ in engineered_panels(study,u)}
     for name in first:pd.testing.assert_frame_equal(first[name].iloc[:65],second[name].iloc[:65])

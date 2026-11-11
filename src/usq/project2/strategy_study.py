@@ -68,8 +68,8 @@ class StrategyStudy(FinalStudy):
             self.save(case, phase, self.score, weighting=weighting, retain=retain)
 
     def robustness(self):
-        for cost in [20,30]:self.save('cost_'+str(cost),'evaluation',self.score,cost=cost)
-        for name in self.parts:self.save('without_'+name[:3],'evaluation',composite(self.parts,name).where(self.common))
+        for cost in [20,30]:self.save('cost_'+str(cost),'evaluation',self.score,cost=cost,weighting='cap')
+        for name in self.parts:self.save('without_'+name[:3],'evaluation',composite(self.parts,name).where(self.common),weighting='cap')
 
     def audit(self):
         summaries=pd.read_csv(self.out/'portfolio_summary.csv');checks=[]

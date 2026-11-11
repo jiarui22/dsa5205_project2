@@ -50,7 +50,7 @@ def timestamps_from_days(values):
     return pd.to_datetime(safe,unit='D',origin='unix',errors='coerce').where(day.notna())
 
 
-def save_panel(frame, path, dates, sids, kind='numeric'):
+def save_panel(frame, path, dates, sids, kind='numeric', *, numeric_dtype='float32'):
     path = Path(path)
     if not frame.index.equals(dates) or not frame.columns.equals(sids):
         raise ValueError(f'Full axes mismatch: {path.name}; never take an intersection')
@@ -65,7 +65,9 @@ def save_panel(frame, path, dates, sids, kind='numeric'):
         for col in frame:
             frame[col] = frame[col].astype('category')
     else:
-        frame = frame.astype('float32')
+        if numeric_dtype not in ('float32', 'float64'):
+            raise ValueError('Numeric panel precision must be float32 or float64')
+        frame = frame.astype(numeric_dtype)
         if np.isinf(frame.to_numpy()).any():
             raise ValueError('Overflow/infinity in numeric panel')
     path.parent.mkdir(parents=True,exist_ok=True)
@@ -73,7 +75,7 @@ def save_panel(frame, path, dates, sids, kind='numeric'):
     frame.to_pickle(temp,protocol=4)
     temp.replace(path)
     return {'sha256':digest(path),'shape':list(frame.shape),'start':dates[0],'end':dates[-1],
-            'dtype':kind if kind!='numeric' else 'float32',
+            'dtype':kind if kind!='numeric' else numeric_dtype,
             'coverage':float(frame.notna().to_numpy().mean())}
 
 

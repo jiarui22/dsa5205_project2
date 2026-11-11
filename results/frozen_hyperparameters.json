@@ -5,7 +5,7 @@
       "alpha_per_sample": 1.0,
       "feature_set": "combined"
     },
-    "CV_mean_rankic": 0.016264039348360196
+    "CV_mean_rankic": 0.01625857136771371
   },
   "lasso": {
     "candidate": 6,
@@ -13,16 +13,16 @@
       "alpha": 0.0005,
       "feature_set": "combined"
     },
-    "CV_mean_rankic": 0.023023100155719064
+    "CV_mean_rankic": 0.02302309924282046
   },
   "xgboost": {
-    "candidate": 22,
+    "candidate": 6,
     "params": {
-      "max_depth": 4,
+      "max_depth": 3,
       "learning_rate": 0.08,
       "reg_lambda": 1.0,
-      "feature_set": "combined"
+      "feature_set": "fundamental"
     },
-    "CV_mean_rankic": 0.01016705954764783
+    "CV_mean_rankic": 0.01014920675639659
   }
 }

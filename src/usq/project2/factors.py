@@ -145,22 +145,23 @@ def wq(number, p):
 
 
 def price_inputs(load, universe):
-    """Forward-anchor each known segment; future back-adjustment constants cancel.
+    """Rebuild canonical float64 prices from raw marks and source daily returns.
 
     Rank inputs use only the contemporaneously eligible cross-section. A missing
     boundary bar prevents rolling operators from spanning a segment discontinuity.
     """
-    seg, adj = load("adjustment_segment"), load("adj_factor")
+    from usq.data.adjustments import adjusted_bars, observed_returns
+    seg, source_returns = load("adjustment_segment"), load("daily_return")
+    bars = {field: load(field) for field in ('open', 'high', 'low', 'close')}
+    adjusted = adjusted_bars(bars, source_returns, seg)
     reset = seg.ne(seg.shift()) & seg.gt(0)
-    anchor = adj.where(reset).ffill().where(seg.gt(0))
-    factor = adj/anchor
     boundary = reset & seg.shift().notna()
     eligible = universe.eq(1)
     p = {}
     for field in ("open", "high", "low", "close"):
-        p[field] = (load(field)*factor).where(~boundary & seg.gt(0) & eligible).astype("float32")
+        p[field] = adjusted[field].where(~boundary & seg.gt(0) & eligible)
     p["volume"] = load("volume").where(~boundary & seg.gt(0) & eligible)
-    p["returns"] = load("returns").where(eligible)
+    p["returns"] = observed_returns(adjusted['close'], source_returns, seg).where(eligible)
     return p
 
 

@@ -55,7 +55,7 @@ def screen_wq(database,output):
     rows=[];annual=[]
     for number in WQ_IDS:
         name=f'WQ{number:03d}'
-        f=wq(number,prices).replace([np.inf,-np.inf],np.nan).astype('float32')
+        f=wq(number,prices).replace([np.inf,-np.inf],np.nan)
         stat=information_series(f.reindex(dates),y,universe)
         stat.loc[(stat.index<=WQ_DIRECTION_END)&ends.reindex(stat.index).gt(WQ_DIRECTION_END),['rankic','ic']]=np.nan
         direction=1 if stat.loc[:WQ_DIRECTION_END,'rankic'].mean()>=0 else -1
@@ -73,7 +73,7 @@ def screen_wq(database,output):
     summary=pd.DataFrame(rows)
     sample=universe.loc[WQ_SCREEN_START:].iloc[::5]
     def ranked(name,direction):
-        return rank(wq(int(name[2:]),prices).astype('float32').reindex(sample.index).where(sample.eq(1)))*direction
+        return rank(wq(int(name[2:]),prices).reindex(sample.index).where(sample.eq(1)))*direction
     selected,decisions=select_candidates(summary,ranked)
     result={'wq':selected,'directions':dict(zip(summary.factor,summary.direction.astype(int))),
             'decisions':decisions,'selection_period':'2018-2019','direction_period':'2015-2017',

@@ -1,0 +1,46 @@
+{
+  "unit_tests_passed": 74,
+  "input_price_policy": "canonical_total_return_float64_v1",
+  "data_notebook_complete": true,
+  "strategy_notebook_complete": true,
+  "data_run": "wrds_20261111_134234_590623",
+  "strategy_run": "experiment_20261111_214436_246375",
+  "code_sha256": {
+    "src/usq/data/adjustments.py": "afe8001e974acf94549f558f3cf26ab8304230cfdcdd9cb7bddfb6d30b9cdc72",
+    "src/usq/database/common.py": "dc49d861001ea49927154946905962991134e9addc5737bac27f33f6e96330f4",
+    "src/usq/database/strategy_snapshot.py": "f17bfe06f7eb74efee4606482fb2ce5b8e9da63973c1d246f1fcdbcf7f24eb78",
+    "src/usq/database/raw_preparation.py": "997552b74de4a8c657ee88ba21922bdcb39f1bfed67c939bb6c864a87020151c",
+    "src/usq/database/wrds_reconstruction.py": "b2606e83dedb5807772e9d6ea01e3766c275a2f61d35cb1761167dabf41f1e7a",
+    "src/usq/database/universe_reconstruction.py": "b9dd7ba094a6b3a1202ff23379c3bb7ca195a1d81d5f5ba3439013486a8e3d46",
+    "src/usq/project2/factors.py": "5f1f3cf49a436c47589636da436d4d70b360dd7e4f587b263300125515cd0767",
+    "src/usq/project2/factor_selection.py": "40448d4011591ebf227b32d92c793486fb1329503f5aafa05bc9c096fde459da",
+    "src/usq/project2/data_preparation.py": "e3be4964fefbe38fcf7e1c1f4322176c02531d8ec9f2cb2f8016eadbc9c205bd"
+  },
+  "strategy_markdown_unchanged": true,
+  "fresh_model_fits": 396,
+  "CV_folds": 189,
+  "portfolio_accounting_checks": 38,
+  "selected_case": "fundamental_cap",
+  "identical_input_repeat_predictions_exact": true,
+  "selected_metrics": [
+    {
+      "phase": "validation",
+      "annual_return": 0.19612246647644715,
+      "sharpe": 1.3325130243403007,
+      "max_drawdown": -0.11685878491847712
+    },
+    {
+      "phase": "evaluation",
+      "annual_return": 0.24918162175402014,
+      "sharpe": 1.407402643967901,
+      "max_drawdown": -0.20755457577757008
+    }
+  ],
+  "data_markdown_word_count": 304,
+  "source_return_label_audit": {
+    "finite_targets_checked": 8945343,
+    "max_absolute_error": 1.4210854715202004e-14,
+    "passed": true,
+    "formula": "product(1+sourceRET[t+2:t+11])-1"
+  }
+}

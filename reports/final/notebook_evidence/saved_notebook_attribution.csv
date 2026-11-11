@@ -1,0 +1,9 @@
+phase,link,upper,lower,cagr_difference,ci_low,ci_high,active_mean_annualized,tracking_error,information_ratio,detectable_excess
+validation,selection,fundamental_cap,pool_cap,-6.15 pp,-16.69 pp,+6.36 pp,-4.93%,4.93%,-0.9997,0.0990
+validation,weighting,pool_cap,pool_equal,+9.06 pp,-19.19 pp,+26.33 pp,6.65%,9.60%,0.6929,0.1928
+validation,universe,pool_equal,SPY,-9.27 pp,-29.82 pp,+23.56 pp,-6.75%,10.90%,-0.6192,0.2189
+validation,total,fundamental_cap,SPY,-6.36 pp,-17.14 pp,+8.31 pp,-5.03%,5.53%,-0.9095,0.1110
+evaluation,selection,fundamental_cap,pool_cap,+3.72 pp,-6.96 pp,+15.85 pp,3.09%,7.34%,0.4215,0.1040
+evaluation,weighting,pool_cap,pool_equal,+9.55 pp,-5.05 pp,+22.13 pp,7.59%,9.77%,0.7767,0.1384
+evaluation,universe,pool_equal,SPY,-10.54 pp,-24.48 pp,+5.40 pp,-8.39%,10.77%,-0.7789,0.1526
+evaluation,total,fundamental_cap,SPY,+2.73 pp,-8.79 pp,+16.40 pp,2.29%,7.98%,0.2873,0.1131

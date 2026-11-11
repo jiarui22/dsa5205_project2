@@ -40,11 +40,11 @@ pdftitle={Fundamental Signals and Portfolio Construction in US Equities},pdfauth
 \vspace{0.3cm}{\large A Comparative Study of Accounting Scores and Learned Return Forecasts\par}
 \vspace{0.5cm}{\large Team 34\par}
 \vspace{0.15cm}Wan Gehong \quad Wang Tianyi \quad Wu Jiarui \quad Yan Tianao
-\par\vspace{0.15cm}11 November 2026
+\par\vspace{0.15cm}12 November 2026
 \end{center}
 \vspace{0.25cm}
 \begin{abstract}
-We compare a six-signal accounting rank composite with regularized and tree-based return forecasts in US equities. A single freshly executed Notebook audits the supplied 2014--2025 panels, reconstructs ten-session next-close targets, screens 36 formulaic price--volume candidates, and performs \FitCount{} new model fits. WQ directions use 2015--2017, WQ screening uses 2018--2019, model cross-validation uses expanding folds in 2020--2022, and portfolio selection uses 2023. Subsequent forecasts are refitted semiannually on the preceding five calendar years. Among twelve score--weighting candidates, the validation rule selects \SelectedName{}. Over 2024--2025 this portfolio earns \SelectedCAGR\% net CAGR, a \SelectedSharpe{} Sharpe ratio, and a \SelectedMDD\% maximum drawdown, against \SPYCAGR\% CAGR for SPY. Returns deduct 10 basis points per dollar bought or sold. Prediction accuracy, matched-universe allocation comparisons, cost and factor-ablation diagnostics, and holdings-based nine-style risk attribution qualify the headline result. The risk-model residual is model-dependent and is not certified alpha. The study is a retrospective redesign of an already examined historical sample: shifting dates and rerunning code does not create a new blind holdout. Latest financial vintages and incomplete source lineage further limit interpretation. The principal contribution is a time-ordered, auditable comparison of signals, forecast complexity, allocation, and implementation costs.
+We compare a six-signal accounting rank composite with regularized and tree-based return forecasts in US equities. Two sequential Notebooks prepare raw CRSP and Compustat inputs and study the 2014--2025 panels. The saved execution screens 36 formulaic price--volume candidates and records \FitCount{} new model fits. WQ directions use 2015--2017, WQ screening uses 2018--2019, model cross-validation uses expanding folds in 2020--2022, and portfolio selection uses 2023. Subsequent forecasts are refitted semiannually on the preceding five calendar years. Among twelve score--weighting candidates, the validation rule selects \SelectedName{}. Over 2024--2025 this portfolio earns \SelectedCAGR\% net CAGR, a \SelectedSharpe{} Sharpe ratio, and a \SelectedMDD\% maximum drawdown, against \SPYCAGR\% CAGR for SPY. Returns deduct 10 basis points per dollar bought or sold. The selected portfolio's cost and factor-ablation tests, prediction diagnostics, matched-pool allocation comparisons, and holdings-based nine-style attribution qualify the headline result. Its positive CAGR gap has a paired 95\% interval spanning zero. The risk-model residual is model-dependent and is not certified alpha. This report reads the latest saved results without rerunning the research. The already examined historical sample and latest-download financial vintages limit predictive claims. The principal contribution is a time-ordered, auditable comparison of signals, forecast complexity, allocation, and implementation costs.
 \end{abstract}
 \vfill\begin{center}\small Keywords: accounting signals; formulaic alphas; purged validation; transaction costs; factor attribution\end{center}
 \clearpage
@@ -54,28 +54,28 @@ We compare a six-signal accounting rank composite with regularized and tree-base
 \section{Research Question and Status of the Evidence}
 Accounting signals are relatively slow-moving, whereas price--volume features react to recent trading. Our economic hypothesis is that the two information sources may be complementary. We test both a transparent accounting ranking and learned combinations, then separate their forecast diagnostics from the performance of actual funded portfolios. The objective is a defensible process rather than a return target.
 
-The direct score retains six financial definitions: four signed-log residual characteristics, free-cash-flow yield, and a seasonal earnings surprise. Ridge and Lasso provide shrinkage-based linear alternatives; shallow XGBoost admits nonlinear interactions. The candidate feature families allow a controlled comparison of accounting inputs, accounting plus screened WQ inputs, and a larger engineered set. Portfolio rules and costs are held common across score sources.
+The direct score retains six financial definitions: four signed-log residual characteristics, free-cash-flow yield, and a seasonal earnings surprise. Ridge and Lasso provide shrinkage-based linear alternatives; shallow XGBoost admits nonlinear interactions. The candidate feature families compare accounting inputs, accounting plus screened WQ inputs, and a larger engineered set under common portfolio rules. Every family contains accounting information: this experiment tests additions to that base, not the incremental value of fundamentals over a pure price--volume model.
 
 \subsection{What changed from the previous report}
 The earlier manuscript described a 2023--2025 historical evaluation and a retrospectively emphasized square-root-capitalization portfolio. The present Notebook instead uses 2023 for a declared twelve-candidate portfolio selection and reports 2024--2025 as its subsequent chronological evaluation. It also uses a fixed five-calendar-year forecast-training window, rather than the earlier expanding-from-2015 forecast window. These are substantive research-design changes, not merely new formatting.
 
 \textbf{Crucially, 2024--2025 had already been inspected in earlier research.} Chronological fitting prevents future labels from entering individual forecasts, but it does not make the redesigned experiment a new untouched test. All reported advantages remain retrospective evidence. Neither moving the validation boundary nor repeating a clean run removes specification-search uncertainty.
 
-The report is bound to one successful fresh-kernel execution: \CodeCells{} code cells in order, \FitCount{} fresh Ridge/Lasso/XGBoost fits, and 38 audited portfolio ledgers. Daily financial cross-sectional regressions and the six direct-score diagnostic calibrations are separate from this learner count. Internal reproducibility strengthens confidence in what the program calculated; it is not independent confirmation of predictive profitability.
+The evidence is bound to the published 11 November execution record: \DataCodeCells{} preparation cells, \CodeCells{} research cells, \FitCount{} fresh learner fits, and 38 audited portfolio ledgers. Daily financial cross-sectional regressions and direct-score diagnostic calibrations are separate from this count. This 12 November manuscript revision reads the stored outputs; it does not retrain models, replay portfolios, or resample bootstrap intervals. Internal reproducibility does not constitute independent confirmation of profitability.
 \clearpage
 
 \section{Data, Coverage, and Independent Preparation}
-We use the team's authorized daily US equity snapshot. It contains market observations derived from CRSP, financial statements derived from Compustat, security mappings, industry information, and cached SPY adjusted closes. Monetary portfolio accounting is in US dollars. A common independently supplied US exchange-session calendar aligns every stock panel. The full panel contains 3,018 sessions during 2014--2025 and 4,366 stable security identifiers; 2014 is feature warm-up rather than supervised training.
+The preparation Notebook reads raw CRSP daily observations, dated CCM security links, Compustat quarterly fundamentals and annual SIC history, and an archived SPY benchmark response. Monetary accounting is in US dollars. An independent NYSE-session calendar aligns 3,018 sessions during 2014--2025 and 4,366 ever-selected security identifiers; 2014 is feature warm-up.
 
-The identifier union must not be confused with daily membership. The supplied eligible universe contains approximately two thousand stocks per date, not four thousand simultaneously tradable names. Its historical selection and security-type lineage are not fully reconstructible. Comparisons are therefore conditional on this extract.
-\nbtable{nb_audit}{Source audit and independent data preparation.}{The supplied source is read-only. Preparation writes an independent database with rebuilt labels and a fresh checksum manifest. Counts are generated by the verified run.}
-\nbfig{nb_universe}{0.95}{Daily supplied universe membership. Securities remain on the panel axes even when individual observations or eligibility are absent.}
+The monthly universe retains the top 80\% by a trailing 60-session mean of unadjusted close times share volume, after common-equity gates, a \$5 price floor, and 252 observed closing sessions. Daily security and price gates then apply. This yields about two thousand members per date, not 4,366 simultaneously eligible stocks. Three truncated-history checks preserve earlier memberships. Static FIC/PRIUSA descriptors and historical revisions remain limitations. Sina turnover/VWAP coverage is incomplete and is excluded from strategy inputs.
+\nbtable{nb_audit}{Saved preparation and source-return audits.}{Raw inputs remain unchanged. The manifest count excludes benchmark and Sina files; snapshot checksums cover the published derived files. Counts are read from saved preparation and strategy outputs.}
+\nbfig{nb_universe}{0.95}{Daily reconstructed universe membership. Securities remain on the panel axes outside their eligible dates.}
 
-Two reviewed materially inconsistent OHLC cells are quarantined across prices, price-derived fields, and trading availability; the affected firms are not removed from history. The material threshold exceeds both \$0.01001 and 0.1\% of closing price. Small floating-point deviations are not treated as bad bars. Negative accounting quantities can be economically meaningful and are retained where definitions permit them. Zero reported volume is counted separately, not silently converted to missing.
+Preparation quarantines two materially inconsistent output OHLC cells, one inside that day's universe, across prices and trading availability. The material threshold exceeds both \$0.01001 and 0.1\% of closing price. The strategy input audit consequently finds no remaining material violations. Zero volume and economically meaningful negative accounting quantities are retained under their documented rules.
 \clearpage
 
 \section{Information Timing, Targets, and Calendar Splits}
-Let $P^*_{i,T}$ be the adjusted close for stock $i$ on session $T$. The prediction target is
+Let $P^*_{i,T}$ be the canonical total-return closing chain for stock $i$ on session $T$. Within each known identity segment it is anchored at the first observed raw close and compounded using only past source returns. OHLC ratios and labels retain float64 precision before final feature storage; this avoids premature rounding changes in WQ signs and ranks. The prediction target is
 \begin{equation}
 y_{i,T}=P^*_{i,T+11}/P^*_{i,T+1}-1.
 \end{equation}
@@ -215,19 +215,19 @@ Very small or negative OOS $R^2$ can coexist with a useful cross-sectional order
 
 Changing weights on the entire pool and changing weights on selected stocks are different experiments. In particular, a loss from square-root weighting on the whole pool cannot be assigned mechanically to the selected portfolio. Selection and weighting interact; a telescoping difference is an accounting identity whose components depend on the chosen comparison path, not a causal decomposition of fundamental skill.
 
-\nbfig{nb_reference_attribution}{0.97}{Supplementary attribution for the \emph{square-root-weighted reference}, not necessarily the validation-selected strategy. Adjacent CAGR differences sum to its SPY gap; annual columns use yearly total-return differences.}
+\nbfig{nb_reference_attribution}{0.86}{CAGR-difference attribution for the validation-selected capitalization-weighted strategy. The three path-dependent links sum to its SPY gap; these are descriptive comparisons, not independently tradable or causal premiums.}
 
-The Notebook retains the earlier reference path: fundamental square-root portfolio $\rightarrow$ whole-pool square-root portfolio $\rightarrow$ whole-pool cap portfolio $\rightarrow$ SPY. The first link also changes concentration, cap constraints, retention, and trading costs; it is not pure signal alpha. The second is a whole-pool allocation comparison, not the selected portfolio's weight effect. Similar standardized Size exposures are descriptive consistency evidence, not proof of a causal seven-point drag.
+The current path is selected capitalization portfolio $\rightarrow$ whole-pool capitalization portfolio $\rightarrow$ whole-pool equal-weight portfolio $\rightarrow$ SPY. Its selection, weighting, and universe links are respectively $+\SelectionLink$, $+\WeightingLink$, and $\UniverseLink$ percentage points, totaling $+\ActiveCAGR$. The first also changes concentration, cap constraints, retention, and costs. The last includes allocation and implementation differences relative to SPY. Neither is pure signal alpha. Reversing or changing the path changes the components.
 \clearpage
 
 \section{Robustness: Costs and Factor Ablation}
-\nbfig{nb_stress}{0.98}{Cost and leave-one-factor-out sensitivity of the six-factor \emph{square-root-capitalization reference}. These are not automatically stress results for the validation-selected capitalization strategy.}
+\nbfig{nb_stress}{0.98}{Saved cost and leave-one-factor-out sensitivity results for the selected six-factor capitalization-weighted strategy. Every scenario retains its 2\% formation cap and other portfolio rules.}
 
-The Notebook reruns the reference ledger at 20 and 30bps, then removes one fundamental contribution at a time and re-averages the remaining five. Signals, sample eligibility, weighting, buffer, and rebalance timing otherwise remain fixed. Costs are recomputed in the full self-financing ledger, not subtracted linearly from an annualized return.
+The saved experiment replays the selected ledger at 20 and 30bps, then removes one fundamental contribution at a time and re-averages the remaining five. Sample eligibility, weighting, buffer, and rebalance timing otherwise remain fixed. Costs are computed in the full self-financing ledger, not subtracted linearly from an annual return.
 
-These experiments diagnose sensitivity of a stated reference. They must not be relabeled as robustness of a different selected portfolio. The selected strategy's main ledger remains at 10bps; a complete selected-strategy stress grid would be a distinct additional analysis and should not be fabricated from the reference figures.
+Net CAGR is \SelectedCAGR\% at 10bps, \CostTwentyCAGR\% at 20bps, and \CostThirtyCAGR\% at 30bps, versus \SPYCAGR\% for SPY. The positive historical CAGR gap therefore survives these two higher-cost scenarios. This does not establish statistical robustness or capacity under nonlinear impact.
 
-Likewise, an ablation loss is a conditional historical comparison, not a causal estimate of an individual factor's independent premium. Removing one signal changes ranks and retained positions jointly. Deletion results must not be used to select a better-looking subset on the same evaluation years.
+Dropping F4 raises CAGR to \WithoutFourCAGR\% but lowers Sharpe from \SelectedSharpe{} to \WithoutFourSharpe{}. Thus the results do not show that every factor improves every metric. Removing a signal changes ranks and positions jointly; it is a conditional comparison, not an independent premium estimate. We retain the preselected six-factor rule rather than choosing a subset on these evaluation outcomes. Earlier fusion and financial-delay experiments are outside this latest result set.
 
 Before interpreting net performance as implementable, more realistic execution and data verification would be needed. Constant transaction costs do not capture stock-level spreads, nonlinear impact, order size, or capacity. A low-turnover strategy is cheaper under this model, but low turnover alone does not imply better forecasts or robust outperformance.
 \clearpage
@@ -253,30 +253,34 @@ An interval that excludes zero within this fitted risk model is not proof of a d
 \clearpage
 
 \section{Paired Uncertainty for the Selected Portfolio}
-The selected portfolio and SPY are evaluated on identical sessions. We apply a paired circular block bootstrap with 2,000 resamples and seed 5205, preserving their joint path and local time dependence. Block sizes of 10, 20, and 40 sessions show sensitivity to a dependence assumption. Each resample computes the difference of independently compounded annualized returns; it is not a bootstrap of overlapping ten-session labels.
-\nbtable{nb_intervals}{Selected-strategy minus SPY CAGR gap and paired intervals.}{This reporting diagnostic is derived from the freshly generated selected-strategy daily ledger, with no use in portfolio selection. Intervals are conditional on the research specification and are not corrected for retrospective redesign.}
-\nbfig{nb_selected_intervals}{0.90}{Paired bootstrap uncertainty for the validation-selected strategy relative to SPY. Unlike the Notebook's supplementary reference-portfolio chart, these intervals concern the selected case.}
+The selected portfolio and SPY use identical sessions. The saved Notebook reports a paired circular block bootstrap with 2,000 resamples, seed 5205, and 20-session blocks, preserving the paired path and local dependence. Each resample compares independently compounded annualized returns; it does not resample overlapping ten-session labels. We transcribe these existing intervals without new resampling.
+\nbtable{nb_intervals}{Saved 20-session paired bootstrap intervals for the current attribution path.}{The Total row is selected strategy minus SPY. Other rows correspond to the Section 13 path. Intervals retain the stored Notebook's displayed precision and are conditional on the research specification; they do not correct for retrospective redesign.}
+\nbfig{nb_selected_intervals}{0.90}{The selected-strategy-minus-SPY CAGR gap and its saved paired 95\% interval. Zero lies within the interval.}
 
 With 20-session blocks, the selected portfolio's CAGR-difference interval is $[\SelectedCILow,\SelectedCIHigh]$ percentage points, compared with the point gap of \ActiveCAGR{} points. The interval and the short historical sample should govern interpretation, rather than a standalone positive mean.
 
-The Notebook's supplementary market-model table and reference-portfolio intervals address different estimands. A raw-return regression on SPY with zero cash interest is a market model, not a risk-free-adjusted CAPM claim. The heuristic $2\,\mathrm{TE}/\sqrt{\mathrm{years}}$ is only an approximate arithmetic-active-return scale under simplifying assumptions, not a formal power calculation for CAGR.
+The supplementary SPY market regression reports an annualized intercept of 4.22\% with HAC $t=0.786$, distinct from the \ResidualAlpha\% holdings-based risk-model residual. The CAGR gap, regression intercept, and style-model residual are different estimands. A raw-return regression with zero cash interest is a market model, not a risk-free-adjusted CAPM claim. The heuristic $2\,\mathrm{TE}/\sqrt{\mathrm{years}}$ is only an approximate arithmetic-active-return scale, not formal CAGR power analysis.
 
 No confidence interval accounts for every design decision. The same 2024--2025 dates were observed before this redesign. Accordingly, apparent improvements relative to the previous report cannot be interpreted as independent OOS confirmation. A genuinely subsequent sample under a fixed protocol would be required for that claim.
 \clearpage
 
 \section{Reproducibility, Interpretation, and Limitations}
-The published Notebook is executable from a fresh kernel using the supplied authorized snapshot. Its first cell resolves an explicit data path or \path{TEAM34_DATA_DIR}; if required inputs are absent, it fails with a list of missing files before loading pickles. It does not silently substitute another dataset. Preparation verifies source hashes before and after computation and writes a separate cleaned database. Source observations are never edited.
-
-The verified run executes \CodeCells{} code cells in consecutive order, fits all \FitCount{} models without reused fit checkpoints, and recomputes 38 portfolio ledgers. The independent holdings reconciliation error is at most \texttt{\LedgerError}; fee identities and compounded net wealth also pass. Figures and tables derive from the successful executed Notebook and its compact run outputs.
-
-From the repository root, run the documented Python 3.13 environment and then:
-\begin{quote}\small\ttfamily
-python scripts/execute\_notebook.py --data /your/trusted/snapshot\\
-\hspace*{1em}--output runs/notebook\_validation
+Run these entry points in order, each in a fresh kernel:
+\begin{quote}\small
+\path{notebooks/Equity_Data_Preparation.ipynb}\\
+\path{notebooks/Equity_Strategy_Research.ipynb}
 \end{quote}
-The README also documents interactive Restart Kernel / Run All. Restricted data and fitted-model pickles are not public artifacts. Pickles should be loaded only from trusted team sources; the repository alone does not include the database.
+Use the documented Python 3.13 environment and authorized raw sources. Preparation publishes \path{data/processed/latest_snapshot.json} only after success. The strategy Notebook verifies its completion marker, checksums, axes, canonical prices, and label maturity; it stops if no completed input is active. Raw observations remain unchanged.
 
-Main limitations are latest financial vintages, unresolved universe/export lineage, security-level rather than fully aggregated issuer capitalization, incomplete independent terminal payouts, constant transaction costs, and historical design reuse. Passing internal tests is not equivalent to verifying source provenance or live execution capacity. The source brokerage ideas also postdate part of the evaluation history, so this is an adapted retrospective exercise rather than a historically deployed strategy.
+The stored execution has \DataCodeCells{} data cells and \CodeCells{} research cells in consecutive order, \FitCount{} fresh learner fits, and 38 audited portfolio ledgers. The published audit records 74 passing tests and exact repeated XGBoost predictions on identical input. Independent holdings reconciliation error is at most \texttt{\LedgerError}. A source-return check covers 8,945,343 targets, with maximum absolute error $1.42\times10^{-14}$. These are recorded results, not tests repeated for this manuscript revision.
+
+To rebuild only the report from the current saved outputs, without research execution:
+\begin{quote}\small\ttfamily
+python scripts/build\_report\_from\_saved\_results.py
+\end{quote}
+Compile the supplied LaTeX source twice after asset generation. The report inventory binds each saved input to its hash and upstream commit. The wealth-path image is retained from the executed Notebook; aggregate charts are replotted from stored tables. No model is fitted, portfolio replayed, or bootstrap resampled. Restricted data and fitted-model pickles remain outside Git; use trusted team sources for research inputs.
+
+Main limitations are latest financial vintages, release-date proxies, static FIC/PRIUSA descriptors, security-level rather than fully aggregated issuer capitalization, incomplete terminal payouts, constant transaction costs, and historical design reuse. The monthly universe now has an explicit reconstruction and truncation checks, but these do not remove all source-selection uncertainty. The brokerage ideas also postdate part of the evaluation history; this is a retrospective adaptation, not a historically deployed strategy.
 
 The evidence supports a transparent accounting score as the validation-selected candidate in this particular comparison. The richer forecasts do not automatically improve its funded economic result. The practical lesson is to evaluate prediction, portfolio allocation, costs, and uncertainty jointly, while preserving unsuccessful and ineligible alternatives.
 \clearpage

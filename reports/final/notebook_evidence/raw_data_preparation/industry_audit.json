@@ -1,0 +1,9 @@
+{
+  "source_sha256": "f7f82b3c6e8fc2aa726f7125929dcfa750447160922c6552f2e2019a5982a35f",
+  "raw_rows": 625743,
+  "events": 63035,
+  "covered_securities": 6991,
+  "conflicts_excluded": 0,
+  "release_policy": "Valid FDATE, otherwise PDATE; first strictly following NYSE session; forward only.",
+  "caveat": "Historical revisions are unavailable; release dates are proxies."
+}

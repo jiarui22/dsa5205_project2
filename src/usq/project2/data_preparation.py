@@ -14,6 +14,26 @@ def material_ohlc(open_,high,low,close):
     return (error>.01001)&(error/close.abs()>.001)
 
 
+
+def check_workspace_space(source, work, panel_cells, *, copy_source=True):
+    """Budget a data copy, the largest planned feature matrix, and headroom."""
+    source, work = Path(source), Path(work)
+    input_bytes = sum(path.stat().st_size for path in source.rglob('*') if path.is_file()) if copy_source else 0
+    # At most ten screened WQ signals plus eighteen other values, each with a
+    # missing flag. The target and eligibility arrays require another five bytes.
+    matrix_bytes = panel_cells * (2 * (10 + 18) * 4 + 5)
+    required = input_bytes + matrix_bytes + 2 * 1024**3
+    free = shutil.disk_usage(work).free
+    if free < required:
+        raise OSError(
+            28,
+            f'Insufficient space for a fresh experiment: {free / 1024**3:.1f} GiB free, '
+            f'estimated {required / 1024**3:.1f} GiB needed for the data copy, '
+            'feature matrix and output headroom. Remove regenerable intermediates '
+            'from completed runs or free disk space, then rerun this cell.'
+        )
+
+
 def prepare_research_data(source,work):
     source,work=Path(source),Path(work);work.mkdir(parents=True,exist_ok=True)
     out=work/'database';marker=work/'data_complete.json'
@@ -27,6 +47,7 @@ def prepare_research_data(source,work):
     u=load('universe');dates,sids=u.index,u.columns
     assert dates.is_unique and sids.is_unique and dates.is_monotonic_increasing
     assert u.isin([0,1]).all().all()
+    check_workspace_space(source,work,u.size)
     bars={n:load(n) for n in ['open','high','low','close']}
     bad=material_ohlc(bars['open'],bars['high'],bars['low'],bars['close'])
     bad=bad|((bars['high']<bars['low'])&bars['high'].notna()&bars['low'].notna())
@@ -74,3 +95,56 @@ def prepare_research_data(source,work):
     for line in (source/'checksums.sha256').read_text().splitlines():
         h,name=line.split('  ',1);assert digest(source/name)==h,name
     marker.write_text(json.dumps(checks,indent=2));return out
+
+
+def audit_prepared_snapshot(source, work):
+    """Verify and consume the preceding notebook's immutable, already-clean output."""
+    from usq.project2.protocol import validate_target
+    source,work=Path(source),Path(work);work.mkdir(parents=True,exist_ok=True)
+    marker=work/'data_complete.json'
+    if marker.exists():raise RuntimeError('Choose a new strategy experiment; no prior run is reused.')
+    meta=json.loads((source/'metadata/snapshot.json').read_text())
+    upstream=json.loads((source/'metadata/preprocessing_complete.json').read_text())
+    from usq.data.adjustments import PRICE_PRECISION_POLICY
+    if upstream.get('price_precision_policy') != PRICE_PRECISION_POLICY:
+        raise ValueError('Price precision policy changed: rerun Equity_Data_Preparation.ipynb first')
+    activation=json.loads((source/'metadata/activation.json').read_text())
+    if not activation.get('producer_complete'):
+        raise ValueError('Upstream data preparation has not completed')
+    if not upstream.get('pipeline_complete') or upstream.get('construction_uses_reference_snapshot'):
+        raise ValueError('Require independently reconstructed, completed data-notebook output')
+    count=0
+    for line in (source/'checksums.sha256').read_text().splitlines():
+        sha,name=line.split('  ',1)
+        if digest(source/name)!=sha:raise ValueError('Prepared snapshot changed: '+name)
+        count+=1
+    load=lambda name:pd.read_pickle(source/'panels'/f'{name}.pkl')
+    u=load('universe');validate_target(source,u)
+    from usq.data.adjustments import canonical_close, observed_returns
+    raw_close, source_returns, segments = load('close'), load('daily_return'), load('adjustment_segment')
+    canonical = canonical_close(raw_close, source_returns, segments)
+    pd.testing.assert_frame_equal(canonical, load('close_adj'), check_exact=True)
+    target, _ = close_forward_returns(canonical, 10, segments)
+    pd.testing.assert_frame_equal(target, load('ylabel'), check_exact=True)
+    pd.testing.assert_frame_equal(observed_returns(canonical, source_returns, segments), load('returns'), check_exact=True)
+    del raw_close, source_returns, segments, canonical, target
+    check_workspace_space(source,work,u.size,copy_source=False)
+    audit=[]
+    for name in meta['stock_fields']:
+        f=load(name)
+        if not f.index.equals(u.index) or not f.columns.equals(u.columns):raise ValueError('Prepared axes differ: '+name)
+        numeric=all(pd.api.types.is_numeric_dtype(x) for x in f.dtypes)
+        audit.append({'field':name,'rows':len(f),'securities':len(f.columns),
+            'missing_cells':int(f.isna().sum().sum()),'infinite_cells':int(np.isinf(f.to_numpy()).sum()) if numeric else 0,
+            'eligible_coverage':float((f.notna()&u.eq(1)).to_numpy().sum()/u.eq(1).to_numpy().sum())})
+    pd.DataFrame(audit).to_csv(work/'input_audit.csv',index=False)
+    events=pd.read_parquet(source/'metadata/fundamental_vintages.parquet')
+    available=pd.to_datetime(events.available_date,format='%Y%m%d');period=pd.to_datetime(events.period_end,format='%Y%m%d')
+    assert available.notna().all() and (available>=period).all()
+    events.groupby(['field','availability_basis']).size().rename('events').reset_index().to_csv(work/'financial_availability.csv',index=False)
+    report={**upstream,'passed':True,'source_files_verified':count,
+            'canonical_prices_and_targets_verified':True,
+            'source_snapshot':str(source.resolve()),'source_checksums_sha256':digest(source/'checksums.sha256'),
+            'financial_audit':{'events':len(events),'fields':int(events.field.nunique())}}
+    marker.write_text(json.dumps(report,indent=2))
+    return source

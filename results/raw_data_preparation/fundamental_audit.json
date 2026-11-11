@@ -1,0 +1,19 @@
+{
+  "raw_scanned_rows": 2110695,
+  "raw_filtered_rows": 331816,
+  "source_sha256": "27ea52eb9c1d7a5e2a96c18af2e4d7fad1bbfc8322a035cba5f2a867aab5225f",
+  "conflicting_period_rows": 246,
+  "missing_release_rows": 22933,
+  "output_events": 3994208,
+  "total_fields": 15,
+  "mapping": {
+    "ambiguous_primary_tag_companies": 0,
+    "missing_primary_tag_companies": 0,
+    "eligible_security_candidates": 7208
+  },
+  "limitations": [
+    "Source PRIUSA tags are not verified historical primary-issue status.",
+    "RDQ/FDATEQ are availability proxies, not field-specific publication proof.",
+    "Latest-download values may contain historical restatements."
+  ]
+}

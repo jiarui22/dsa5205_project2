@@ -142,14 +142,14 @@ def plot_periods(r2, period_metrics, selection):
 
 
 def plot_robustness(ev):
-    fig, axes = _figure(6, 'Reference portfolio: six-factor score / square-root cap, 2024–2025',
+    fig, axes = _figure(6, 'Six-factor score / market cap, 2024–2025',
                         shape=(1, 2), size=(12, 4.1))
     axes[0].plot([10, 20, 30], [ev.loc[c, 'annual_return'] for c in
-        ['fundamental_sqrt_cap', 'cost_20', 'cost_30']], marker='o', label='Reference portfolio')
-    axes[0].axhline(ev.loc['fundamental_sqrt_cap', 'spy_annual_return'], color=COLORS['SPY'], ls='--', label='SPY')
+        ['fundamental_cap', 'cost_20', 'cost_30']], marker='o', label='Market-cap portfolio')
+    axes[0].axhline(ev.loc['fundamental_cap', 'spy_annual_return'], color=COLORS['SPY'], ls='--', label='SPY')
     axes[0].set(title='Trading-cost sensitivity', xlabel='Cost per traded dollar (bps)', ylabel='Net CAGR (%)')
     axes[0].set_xticks([10, 20, 30]); axes[0].legend(fontsize=8)
-    cases = ['fundamental_sqrt_cap'] + [f'without_F0{i}' for i in range(1, 7)]
+    cases = ['fundamental_cap'] + [f'without_F0{i}' for i in range(1, 7)]
     axes[1].bar(range(7), ev.loc[cases, 'annual_return'], color=['#17365d'] + ['#3c8d95'] * 6)
     axes[1].set_xticks(range(7), ['All six'] + [f'−F{i}' for i in range(1, 7)])
     axes[1].set(title='Leave-one-factor-out sensitivity', xlabel='Included factor set', ylabel='Net CAGR (%)')
@@ -158,7 +158,7 @@ def plot_robustness(ev):
 
 
 def plot_reference_attribution(attribution):
-    fig, axes = _figure(7, 'Reference-portfolio attribution versus SPY, 2024–2025',
+    fig, axes = _figure(7, 'Market-cap portfolio attribution versus SPY, 2024–2025',
                         shape=(1, 2), size=(12, 4.1))
     z = attribution['attribution'].query("phase == 'evaluation'").set_index('link'); start = 0
     for i, key in enumerate(['selection', 'weighting', 'universe']):
@@ -188,7 +188,7 @@ def plot_styles(style_table):
 
 
 def plot_reference_intervals(attribution):
-    fig, ax = _figure(9, 'Reference-portfolio differences: paired 95% bootstrap intervals, 2024–2025', size=(11, 4))
+    fig, ax = _figure(9, 'Market-cap portfolio differences: paired 95% bootstrap intervals, 2024–2025', size=(11, 4))
     ci = attribution['attribution'].query("phase == 'evaluation'")
     for i, row in enumerate(ci.itertuples()):
         ax.plot([row.ci_low * 100, row.ci_high * 100], [i, i], color='#387f83')
